@@ -1,6 +1,7 @@
 package com.itda.backend;
 
 import com.itda.backend.domain.Member;
+import com.itda.backend.domain.enums.Gender;
 import com.itda.backend.dto.MemberJoinRequestDto;
 import com.itda.backend.dto.MemberResponseDto;
 
@@ -14,7 +15,17 @@ public class MemberMapper {
         member.setUsername(dto.getUsername());
         member.setNickname(dto.getNickname());
         member.setPhone(dto.getPhone());
-        member.setGender(dto.getGender());
+
+        // 안전한 gender 변환 처리
+        String genderStr = dto.getGender();
+        if ("남자".equals(genderStr)) {
+            member.setGender(Gender.M);
+        } else if ("여자".equals(genderStr)) {
+            member.setGender(Gender.F);
+        } else {
+            throw new IllegalArgumentException("올바르지 않은 성별 값입니다: " + genderStr);
+        }
+
         return member;
     }
 
