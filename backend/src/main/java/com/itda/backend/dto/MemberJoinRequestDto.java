@@ -8,7 +8,11 @@ public class MemberJoinRequestDto {
     private String nickname;  // 별명
     private String phone;     // 연락처
     private String gender;    // 성별
+    private String role; // "MENTEE" or "MENTOR"
 
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     public String getPassword() { return password; }

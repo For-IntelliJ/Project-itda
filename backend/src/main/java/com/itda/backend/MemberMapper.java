@@ -3,6 +3,7 @@ package com.itda.backend;
 import com.itda.backend.domain.Member;
 import com.itda.backend.domain.enums.Gender;
 import com.itda.backend.domain.enums.LoginType;
+import com.itda.backend.domain.enums.Role;
 import com.itda.backend.dto.MemberJoinRequestDto;
 import com.itda.backend.dto.MemberResponseDto;
 
@@ -31,6 +32,13 @@ public class MemberMapper {
         member.setLoginType(LoginType.LOCAL);
         System.out.println("[DEBUG] 로그인 타입 설정: " + member.getLoginType());
         System.out.println("[DEBUG] 로그인 타입 name(): " + member.getLoginType().name());
+
+        String roleStr = dto.getRole();
+        try {
+            member.setRole(Role.valueOf(roleStr)); // 반드시 대문자로!
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("올바르지 않은 역할 값입니다: " + roleStr);
+        }
 
         return member;
     }
