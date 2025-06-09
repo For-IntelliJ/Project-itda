@@ -2,6 +2,7 @@ package com.itda.backend;
 
 import com.itda.backend.domain.Member;
 import com.itda.backend.domain.enums.Gender;
+import com.itda.backend.domain.enums.LoginType;
 import com.itda.backend.dto.MemberJoinRequestDto;
 import com.itda.backend.dto.MemberResponseDto;
 
@@ -25,6 +26,11 @@ public class MemberMapper {
         } else {
             throw new IllegalArgumentException("올바르지 않은 성별 값입니다: " + genderStr);
         }
+
+        // loginType은 LOCAL로 고정(소문자 안돼!!)
+        member.setLoginType(LoginType.LOCAL);
+        System.out.println("[DEBUG] 로그인 타입 설정: " + member.getLoginType());
+        System.out.println("[DEBUG] 로그인 타입 name(): " + member.getLoginType().name());
 
         return member;
     }

@@ -34,8 +34,10 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private Role role = Role.MENTEE;
 
+
+    @Column(name = "login_type", nullable = false)
     @Enumerated(EnumType.STRING)
-    private LoginType loginType = LoginType.LOCAL;
+    private LoginType loginType;
 
     @Column(unique = true)
     private String kakaoId;
