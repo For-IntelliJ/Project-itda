@@ -1,6 +1,21 @@
 # Project-itda
 신구대 3-C 1st project 멘토-멘티 중계 웹 제작
 
+## 🔧 백엔드 실행 방법
+
+```bash
+cd backend
+cp src/main/resources/application-example.properties src/main/resources/application.properties
+./gradlew bootRun
+```
+## 🔧 프론트엔드 실행 방법
+```bash
+cd frontend
+cp .env.example .env
+yarn install  
+yarn start     
+```
+
 ### ERD
 | 테이블명             | 설명                    |
 |------------------|-----------------------|
