@@ -18,7 +18,7 @@ module.exports = {
       fontFamily: {
         sans: ['Noto Sans KR', 'sans-serif'],
         pretendard: ['Pretendard', 'sans-serif'],
-        dnf: ['DNFBitBit2', 'sans-serif'],
+        dnf: ['DNFBitBitv2', 'sans-serif'],
       },
     },
   },

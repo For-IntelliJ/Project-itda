@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import ChagePassword from "./ChagePassword";
+import ChagePassword from "../../auth/pages/ChangePassword";
 import DeleteAccount from "./DeleteAccount";
 import ProfileSettings from "./ProfileSettings";
 import EditProfile from "./EditProfile";

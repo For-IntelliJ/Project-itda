@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import {useNavigate} from "react-router-dom";
 import EditProfileModal from "../components/EditProfileModal";
-import CancelContentModal from "../components/CancelContentModal";
+import CancelContentModal from "../../common/modal/CancelContentModal";
 import axios from "axios";
 
 function EditProfile() {
