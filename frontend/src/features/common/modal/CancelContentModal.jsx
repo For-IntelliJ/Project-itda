@@ -1,5 +1,6 @@
 import React from "react";
-import EditProfileModal from "./EditProfileModal";
+import EditProfileModal from "../../user/components/EditProfileModal";
+
 //EditProfile로부터 상수 받아오기
 function CancelContentModal({ onClose,onConfirm }) {
     return (

@@ -25,7 +25,7 @@ function Header() {
                     <a href="#more" className="font-pretendard hover:underline">더보기</a>
                   </li>
                   <li>
-                    <Link to="/classmaker" className="font-pretendard hover:underline">클래스등록</Link>
+                    <Link to="/addclass" className="font-pretendard hover:underline">클래스등록</Link>
                   </li>
                   <li>
                     <Link to="/login" className="font-pretendard hover:underline">로그인</Link>
@@ -39,28 +39,21 @@ function Header() {
               <ul className="flex space-x-8">
                 <li>
                   <a
-                      href="#search"
-                      className="text-lg font-bold font-pretendard  hover:text-[#3D4EFE] transition-colors duration-200"
-                  >
-                    클래스검색
+                      href="#searchclass"
+                      className="text-lg font-bold font-pretendard  hover:text-[#3D4EFE] transition-colors duration-200">클래스검색
                   </a>
                 </li>
                 <li>
                   <Link //마이페이지 첫화면을 프로필설정으로 경로설정
                       to="/mypagelayout?tab=profileset"
-                      className="text-lg font-bold font-pretendard hover:text-[#3D4EFE] transition-colors duration-200"
-                  >
-                    마이페이지
+                      className="text-lg font-bold font-pretendard hover:text-[#3D4EFE] transition-colors duration-200">마이페이지
                   </Link>
                 </li>
                 <li>
                   <Link
                       to="/community?tab=questions"
-                      className="text-lg font-bold font-pretendard hover:text-[#3D4EFE]"
-                  >
-                    커뮤니티
+                      className="text-lg font-bold font-pretendard hover:text-[#3D4EFE]">커뮤니티
                   </Link>
-
                 </li>
               </ul>
             </nav>
