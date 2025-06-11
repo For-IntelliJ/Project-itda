@@ -13,7 +13,7 @@ function Header() {
               {/* 좌측: 로고 + 텍스트 */}
               <div className="flex items-center space-x-5">
                 <img src="/img/MainLogo.png" alt="Main Logo" className="h-10"/>
-                <Link to="/" className="text-3xl  font-dnf">
+                <Link to="/" className="text-3xl  font-dnf text-font">
                   잇다
                 </Link>
               </div>
@@ -22,13 +22,13 @@ function Header() {
               <nav>
                 <ul className="flex space-x-6">
                   <li>
-                    <a href="#more" className="font-pretendard hover:underline">더보기</a>
+                    <a href="#more" className="font-pretendard hover:text-hover hover:font-bold">더보기</a>
                   </li>
                   <li>
-                    <Link to="/addclass" className="font-pretendard hover:underline">클래스등록</Link>
+                    <Link to="/addclass" className="font-pretendard hover:text-hover hover:font-bold">클래스등록</Link>
                   </li>
                   <li>
-                    <Link to="/login" className="font-pretendard hover:underline">로그인</Link>
+                    <Link to="/login" className="font-pretendard hover:text-hover hover:font-bold">로그인</Link>
                   </li>
                 </ul>
               </nav>
@@ -40,19 +40,19 @@ function Header() {
                 <li>
                   <a
                       href="#searchclass"
-                      className="text-lg font-bold font-pretendard  hover:text-[#3D4EFE] transition-colors duration-200">클래스검색
+                      className="text-lg font-bold font-pretendard  hover:text-hover hover:font-extrabold transition-colors duration-200">클래스검색
                   </a>
                 </li>
                 <li>
                   <Link //마이페이지 첫화면을 프로필설정으로 경로설정
                       to="/mypagelayout?tab=profileset"
-                      className="text-lg font-bold font-pretendard hover:text-[#3D4EFE] transition-colors duration-200">마이페이지
+                      className="text-lg font-bold font-pretendard hover:text-hover hover:font-extrabold transition-colors duration-200">마이페이지
                   </Link>
                 </li>
                 <li>
                   <Link
                       to="/community?tab=questions"
-                      className="text-lg font-bold font-pretendard hover:text-[#3D4EFE]">커뮤니티
+                      className="text-lg font-bold font-pretendard hover:text-hover hover:font-extrabold transition-colors duration-200">커뮤니티
                   </Link>
                 </li>
               </ul>
