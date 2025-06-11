@@ -4,13 +4,12 @@ import PasswordInput from '../components/PasswordInput';
 
 const JoinPage = () => {
     const [formData, setFormData] = useState({
-        username: '',  // 로그인용 ID
-        password: '',
-        name: '',      // 실명
+        username: '',   // 실명
+        nickname: '',   // 별명
         email: '',
-        nickname: '',
-        gender: '',
+        password: '',
         phone: '',
+        gender: '',
         role: 'MENTEE',
         loginType: 'LOCAL',
     });
@@ -29,10 +28,25 @@ const JoinPage = () => {
         try {
             await registerUser(formData);
             console.log('회원가입 성공');
+            alert('회원가입 성공');
+            window.location.href = '/login'
         } catch (error) {
             console.error('회원가입 실패:', error);
+            alert('회원가입 실패');
         }
     };
+
+    const handlePhoneChange = (e) => {
+        let value = e.target.value.replace(/[^0-9]/g, ''); // 숫자만 남김
+        if (value.length > 3 && value.length <= 7) {
+            value = value.replace(/(\d{3})(\d+)/, '$1-$2');
+        } else if (value.length > 7) {
+            value = value.replace(/(\d{3})(\d{4})(\d+)/, '$1-$2-$3');
+            value = value.slice(0, 13); // 최대 길이 제한 (010-1234-5678)
+        }
+        setFormData(prev => ({ ...prev, phone: value }));
+    };
+
 
     return (
         <div className="flex h-screen w-screen items-center justify-center bg-[#EBEFFF]">
@@ -53,33 +67,6 @@ const JoinPage = () => {
                     <div className="flex w-full flex-col items-center justify-center">
                         <h2 className="mb-6 text-center text-2xl font-bold">회원가입</h2>
                         <form className="space-y-4" onSubmit={handleSubmit}>
-                            {/* 로그인 ID */}
-                            <p className="mb-1 text-font">로그인 ID</p>
-                            <input
-                                type="text"
-                                name="username"
-                                value={formData.username}
-                                onChange={handleChange}
-                                placeholder="아이디 (예: idda1234)"
-                                className="w-full rounded border border-hover p-2 transition duration-200 hover:border-2 focus:border-2 focus:outline-none"
-                                required
-                            />
-
-                            {/* 비밀번호 */}
-                            <PasswordInput onChange={handlePasswordChange} />
-
-                            {/* 실명 */}
-                            <p className="mb-1 text-font">실명</p>
-                            <input
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                placeholder="홍길동"
-                                className="w-full rounded border border-hover p-2 transition duration-200 hover:border-2 focus:border-2 focus:outline-none"
-                                required
-                            />
-
                             {/* 이메일 */}
                             <p className="mb-1 text-font">이메일</p>
                             <input
@@ -92,7 +79,22 @@ const JoinPage = () => {
                                 required
                             />
 
-                            {/* 닉네임 */}
+                            {/* 비밀번호 */}
+                            <PasswordInput onChange={handlePasswordChange} />
+
+                            {/* 실명 */}
+                            <p className="mb-1 text-font">이름</p>
+                            <input
+                                type="text"
+                                name="username"
+                                value={formData.username}
+                                onChange={handleChange}
+                                placeholder="홍길동"
+                                className="w-full rounded border border-hover p-2 transition duration-200 hover:border-2 focus:border-2 focus:outline-none"
+                                required
+                            />
+
+                            {/* 닉네임(별명) */}
                             <p className="mb-1 text-font">닉네임</p>
                             <input
                                 type="text"
@@ -114,8 +116,8 @@ const JoinPage = () => {
                                             <input
                                                 type="radio"
                                                 name="gender"
-                                                value="M"
-                                                checked={formData.gender === 'M'}
+                                                value="남자"
+                                                checked={formData.gender === '남자'}
                                                 onChange={handleChange}
                                                 className="accent-indigo-500"
                                                 required
@@ -126,8 +128,8 @@ const JoinPage = () => {
                                             <input
                                                 type="radio"
                                                 name="gender"
-                                                value="F"
-                                                checked={formData.gender === 'F'}
+                                                value="여자"
+                                                checked={formData.gender === '여자'}
                                                 onChange={handleChange}
                                                 className="accent-pink-500"
                                             />
@@ -143,9 +145,8 @@ const JoinPage = () => {
                                         type="tel"
                                         name="phone"
                                         value={formData.phone}
-                                        onChange={handleChange}
+                                        onChange={handlePhoneChange}
                                         placeholder="010-1234-5678"
-                                        pattern="010-[0-9]{4}-[0-9]{4}"
                                         inputMode="numeric"
                                         maxLength={13}
                                         className="w-full rounded border border-hover p-2 transition duration-200 hover:border-2 focus:border-2 focus:outline-none"

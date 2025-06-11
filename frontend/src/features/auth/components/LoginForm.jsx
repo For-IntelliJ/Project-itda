@@ -5,7 +5,7 @@ import SocialLoginButtons from './SocialLoginButtons';
 
 const LoginForm = () => {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({ username: '', password: '' });
+    const [formData, setFormData] = useState({ email: '', password: '' });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -19,7 +19,7 @@ const LoginForm = () => {
                 withCredentials: true,
             });
             alert('로그인 성공!');
-            navigate('/home');
+            navigate('/');
         } catch (error) {
             alert('로그인 실패!');
             console.error(error);
@@ -31,13 +31,13 @@ const LoginForm = () => {
             <h2 className="mb-6 text-center text-2xl font-bold">환영합니다</h2>
             <form className="flex w-[80%] flex-col space-y-4" onSubmit={handleSubmit}>
                 <div>
-                    <p className="mb-1 text-font">아이디</p>
+                    <p className="mb-1 text-font">이메일</p>
                     <input
                         type="text"
-                        name="username"
-                        value={formData.username}
+                        name="email"
+                        value={formData.email}
                         onChange={handleChange}
-                        placeholder="아이디를 입력하세요"
+                        placeholder="example@itda.com"
                         className="w-full rounded border border-hover p-2"
                         required
                     />

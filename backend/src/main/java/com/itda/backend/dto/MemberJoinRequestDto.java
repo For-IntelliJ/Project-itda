@@ -2,13 +2,14 @@ package com.itda.backend.dto;
 
 // 회원가입 시 클라이언트에서 전달되는 요청 데이터 객체
 public class MemberJoinRequestDto {
+    private String username;   // 실명
+    private String nickname;   // 별명
     private String email;     // 이메일 주소
     private String password;  // 비밀번호
-    private String username;  // 이름
-    private String nickname;  // 별명
     private String phone;     // 연락처
     private String gender;    // 성별
     private String role; // "MENTEE" or "MENTOR"
+    private String loginType;  // "LOCAL" or "KAKAO"
 
 
     public String getRole() { return role; }
@@ -25,4 +26,12 @@ public class MemberJoinRequestDto {
     public void setPhone(String phone) { this.phone = phone; }
     public String getGender() { return gender; }
     public void setGender(String gender) { this.gender = gender; }
+
+    public String getLoginType() {
+        return loginType;
+    }
+
+    public void setLoginType(String loginType) {
+        this.loginType = loginType;
+    }
 }
