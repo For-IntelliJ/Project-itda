@@ -21,9 +21,9 @@ function CommunityLayout() {
     // ✅ 탭에 따라 이동 경로 결정
     const handleWriteClick = () => {
         if (selectedTab === "questions") {
-            navigate("/ask/write");
+            navigate("/community/ask/write");       // ✅ 질문 쓰기 경로
         } else if (selectedTab === "free") {
-            navigate("/free/write");
+            navigate("/community/freeboard/write"); // ✅ 자유 글쓰기 경로
         }
     };
 

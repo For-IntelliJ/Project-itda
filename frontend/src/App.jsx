@@ -48,8 +48,8 @@ function LayoutWrapper() {
                     <Route path="/questions/:id" element={<QuestionDetailPage />} />
 
                     {/* 커뮤니티: 글쓰기 */}
-                    <Route path="/coummunity/ask/write" element={<AskQuestionPage/>}/>
-                    <Route path="/coummunity/freeboard/write" element={<FreeBoardWritePage/>}/>
+                    <Route path="/community/ask/write" element={<AskQuestionPage />} />
+                    <Route path="/community/freeboard/write" element={<FreeBoardWritePage />} />
 
                     {/* 클래스 상세 페이지 */}
                     <Route path="/class/:id" element={<ClassDetail />} />
