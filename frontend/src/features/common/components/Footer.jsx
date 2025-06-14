@@ -39,7 +39,7 @@ const Footer = () => {
                         <div className="flex flex-col items-center text-gray-600 text-xs font-normal font-['Noto_Sans'] leading-relaxed text-left">
                             <div className="h-px bg-gray-600 w-full mb-2" />
                             <div className="max-w-fit">
-                                © 주식회사 잇다 | 대표 itswc | 사업자등록번호 : 136-23-01234 |
+                                © 2025 ITDA. | 대표 itswc | 사업자등록번호 : 136-23-01234 |
                                 통신판매번호 : 2023-성남금광-0136
                                 <br />
                                 주소 : 경기도 성남시 중원구 광명로 377 남관 정보미디어학부 111호

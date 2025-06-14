@@ -1,5 +1,5 @@
 import React from "react";
-import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
+import {BrowserRouter as Router, Route, Routes, useLocation} from "react-router-dom";
 // 공통 컴포넌트
 import Header from "./features/common/components/Header";
 import Footer from "./features/common/components/Footer";
@@ -18,38 +18,52 @@ import AskQuestionPage from "./features/community/pages/AskQuestionPage";
 import FreeBoardWritePage from "./features/community/pages/FreeBoardWritePage";
 import QuestionDetailPage from "./features/community/pages/QuestionDetailPage";
 
-function App() {
+function LayoutWrapper() {
+    const location = useLocation();
+    const noLayoutPaths = ["/login", "/join"]; // ❗ 헤더/푸터를 숨기고 싶은 경로 추가
+
+    const shouldHideLayout = noLayoutPaths.includes(location.pathname);
+
     return (
         <div className="min-h-screen flex flex-col">
-            <Router>
-                <Header/>
-                <main className="flex-grow ">
-                    <Routes>
-                        <Route path="/" element={<MainPage/>}/>
-                        <Route path="/join" element={<JoinPage/>}/>
-                        <Route path="/login" element={<LoginPage/>}/>
-                        <Route path="/faq" element={<FAQPage />} />
-                        <Route path="/addclass" element={<AddClassPage />} />
+            {!shouldHideLayout && <Header/>}
+            <main className="flex-grow ">
+                <Routes>
+                    <Route path="/" element={<MainPage/>}/>
+                    <Route path="/join" element={<JoinPage/>}/>
+                    <Route path="/login" element={<LoginPage/>}/>
+                    <Route path="/faq" element={<FAQPage/>}/>
+                    <Route path="/addclass" element={<AddClassPage/>}/>
 
-                        {/*마이페이지 메인*/}
-                        <Route path="/mypage" element={<MyPageLayout />} />
-                        {/*마이페이지: 프로필설정/프로필수정*/}
-                        <Route path="/editprofile" element={<EditProfile />} />
+                    {/*마이페이지 메인*/}
+                    <Route path="/mypage" element={<MyPageLayout/>}/>
+                    {/*마이페이지: 프로필설정/프로필수정*/}
+                    <Route path="/editprofile" element={<EditProfile/>}/>
 
-                        {/* 커뮤니티 메인 (탭 포함) */}
-                        <Route path="/community" element={<CommunityLayout />} />
-                        {/* 커뮤니티: 글쓰기 */}
-                        <Route path="/coummunity/ask/write" element={<AskQuestionPage />} />
-                        <Route path="/coummunity/freeboard/write" element={<FreeBoardWritePage />} />
+                    {/* 커뮤니티 메인 (탭 포함) */}
+                    <Route path="/community" element={<CommunityLayout/>}/>
+                    {/* 커뮤니티: 글쓰기 */}
+                    <Route path="/coummunity/ask/write" element={<AskQuestionPage/>}/>
+                    <Route path="/coummunity/freeboard/write" element={<FreeBoardWritePage/>}/>
 
-                        {/* 질문 상세 페이지 */}
-                        <Route path="/coummunity/ask/questions/:id" element={<QuestionDetailPage />} />
+                    {/* 질문 상세 페이지 */}
+                    <Route path="/coummunity/ask/questions/:id" element={<QuestionDetailPage/>}/>
 
-                    </Routes>
-                </main>
-                <Footer/>
-            </Router>
+                </Routes>
+            </main>
+            {!shouldHideLayout && <Footer/>}
         </div>
+    );
+
+}
+
+
+function App() {
+    return (
+
+        <Router>
+            <LayoutWrapper/>
+        </Router>
     );
 }
 
