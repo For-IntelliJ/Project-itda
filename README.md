@@ -202,3 +202,18 @@ yarn start
 | `member_id`  | BIGINT    | 좋아요 누른 유저 | FK → `member(id)`          |
 | `mentor_id`  | BIGINT    | 대상 멘토 ID  | FK → `member(id)`          |
 | `created_at` | TIMESTAMP | 등록 시각     | DEFAULT CURRENT\_TIMESTAMP |
+
+
+11. apply : 클래스 신청 정보
+    멘티가 멘토의 클래스에 신청한 기록을 저장하는 테이블.
+    신청 상태(PENDING, APPROVED, REJECTED)와 신청 시각을 함께 관리한다.
+    mentee_id는 member 테이블을 참조하며, role = 'mentee' 조건은 비즈니스 로직으로 체크해야 함.
+
+| 필드명          | 타입                                    | 설명         | 제약조건 / 관계                                       |
+| ------------ | ------------------------------------- | ---------- | ----------------------------------------------- |
+| `id`         | BIGINT                                | 신청 ID      | PK, AUTO\_INCREMENT                             |
+| `class_id`   | BIGINT                                | 신청한 클래스 ID | FK → `class(id)`                                |
+| `mentee_id`  | BIGINT                                | 신청한 멘티 ID  | FK → `member(id)` (role = 'mentee') 조건 필요       |
+| `status`     | ENUM('PENDING','APPROVED','REJECTED') | 신청 상태      | DEFAULT 'PENDING'                               |
+| `applied_at` | TIMESTAMP                             | 신청 일시      | DEFAULT CURRENT\_TIMESTAMP (또는 @PrePersist로 설정) |
+

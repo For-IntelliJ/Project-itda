@@ -60,4 +60,8 @@ public class ClassEntity {
     public void setRegion(Region region) {
 
     }
+
+    public Object getClassname() {
+        return this.title;
+    }
 }

@@ -17,6 +17,7 @@ import CommunityLayout from "./features/community/pages/CommunityLayout";
 import AskQuestionPage from "./features/community/pages/AskQuestionPage";
 import FreeBoardWritePage from "./features/community/pages/FreeBoardWritePage";
 import QuestionDetailPage from "./features/community/pages/QuestionDetailPage";
+import ClassDetail from "./features/class/pages/ClassDetail";
 
 function LayoutWrapper() {
     const location = useLocation();
@@ -48,6 +49,8 @@ function LayoutWrapper() {
 
                     {/* 질문 상세 페이지 */}
                     <Route path="/coummunity/ask/questions/:id" element={<QuestionDetailPage/>}/>
+                    {/* 클래스 상세 페이지 */}
+                    <Route path="/class/:id" element={<ClassDetail />} />
 
                 </Routes>
             </main>
