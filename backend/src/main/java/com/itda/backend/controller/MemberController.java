@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/member")
 public class MemberController {
-
     private final MemberService memberService;
 
     // 생성자를 통해 MemberService 주입
