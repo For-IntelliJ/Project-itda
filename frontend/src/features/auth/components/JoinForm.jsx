@@ -12,7 +12,7 @@ const JoinForm = () => {
         password: '',
         confirmPassword: '',
         phone: '',
-        gender: '',
+        gender: '남자',
         role: 'MENTEE',
         loginType: 'LOCAL',
     });
@@ -29,8 +29,12 @@ const JoinForm = () => {
             return;
         }
 
+        const { confirmPassword, ...payload } = formData;
+
         try {
-            await axios.post('http://localhost:8080/api/member/join', formData);
+            await axios.post('http://localhost:8080/api/member/join', payload, {
+                withCredentials: true,
+            });
             alert('회원가입 성공!');
             navigate('/login');
         } catch (error) {
@@ -38,6 +42,7 @@ const JoinForm = () => {
             console.error(error);
         }
     };
+
 
     return (
         <div className="w-96 h-[720px] mt-5 flex flex-col justify-between px-5 py-4 font-sans text-font tracking-tight">
