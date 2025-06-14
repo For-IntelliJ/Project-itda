@@ -576,7 +576,8 @@ function CommunityQuestionPage() {
                 {paginatedData.length > 0 ? (
                     paginatedData.map((item, idx) => (
                         <QuestionCard
-                            key={item.id || idx}
+                            key={idx}
+                            id={item.id || idx + 1}  // id가 없으면 인덱스 + 1을 대체용으로 사용
                             {...item}
                         />
                     ))

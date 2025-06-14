@@ -17,7 +17,7 @@ function ProfileSettings() {
 
     const handleEditClick = () => {
         console.log("프로필 수정 버튼 클릭됨"); // 여기에 콘솔 로그!
-        navigate("/mypagelayout?tab=editpage");
+        navigate("/mypage?tab=editprofile");
     };
 
     const TabButton = ({ label, value }) => (

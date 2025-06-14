@@ -11,17 +11,6 @@ function EditProfile() {
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);//이중확인창
     const navigate = useNavigate();
 
-
-    // 사진 업로드 후 저장 눌렀을 때
-    const handleSave = () => {
-        navigate("/mypagelayout?tab=profileset", {
-            state: {
-                profileData,//이부분에는 오늘의 다짐만 불러와야겠군
-                previewUrl,
-            }
-        });
-    };
-    
     const [profileData, setProfileData] = useState({
         name: '',
         email: '',
@@ -32,6 +21,16 @@ function EditProfile() {
         personalweb: '',
         personalwebname: ''
     });
+
+    // 사진 업로드 후 저장 눌렀을 때
+    const handleSave = () => {
+        navigate("/mypage", {
+            state: {
+                profileData,//이부분에는 오늘의 다짐만 불러와야겠군
+                previewUrl,
+            }
+        });
+    };
 
     const handleUploadClick = () => {
         fileInputRef.current?.click();
