@@ -1,6 +1,6 @@
 package com.itda.backend.service;
 
-import com.itda.backend.MemberMapper;
+import com.itda.backend.mapper.MemberMapper;
 import com.itda.backend.domain.Member;
 import com.itda.backend.dto.MemberJoinRequestDto;
 import com.itda.backend.dto.MemberResponseDto;
