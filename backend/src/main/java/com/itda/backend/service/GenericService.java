@@ -1,8 +1,6 @@
-package com.itda.backend.service;
-
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
+import java.util.Optional;
 
 public class GenericService<T> {
 
@@ -18,6 +16,10 @@ public class GenericService<T> {
 
     public List<T> findAll() {
         return repository.findAll();
+    }
+
+    public Optional<T> findOptionalById(Long id) {
+        return repository.findById(id);
     }
 
     public T findById(Long id) {

@@ -1,14 +1,27 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import PostForm from "../components/PostForm";
+import axios from "axios";
+
+
 
 function FreeBoardWritePage() {
     const navigate = useNavigate();
 
-    const handleSubmit = (data) => {
-        console.log("자유게시판 글 등록됨:", data);
-        alert("글이 등록되었습니다!");
-        navigate("/community?tab=free");
+    const handleSubmit = async (data) => {
+        try {
+            await axios.post("/api/board/write", {
+                type: "FREE",
+                title: data.title,
+                content: data.content,
+            });
+
+            alert("글이 등록되었습니다!");
+            navigate("/community?tab=free");
+        } catch (error) {
+            console.error("글 등록 실패", error);
+            alert("등록 중 오류가 발생했습니다.");
+        }
     };
 
     return (
