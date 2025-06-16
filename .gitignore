@@ -57,3 +57,16 @@ backend/src/main/resources/application.properties
 !**/src/test/**/out/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
+.gradle/8.10/checksums/checksums.lock
+.gradle/8.10/checksums/checksums.lock
+*.bin
+.gradle/8.10/checksums/checksums.lock
+.gradle/8.10/executionHistory/executionHistory.lock
+.gradle/8.10/fileHashes/fileHashes.lock
+C:\Users\kangd\Documents\GitHub\Project-itda\.gradle\buildOutputCleanup\outputFiles.bin
+.gradle/8.10/checksums/checksums.lock
+.gradle/8.10/executionHistory/executionHistory.lock
+.gradle/8.10/fileHashes/fileHashes.lock
+.gradle/build/outputCleanup/buildOutputCleanup.lock
+.gradle/build/outputCleanup/outputFiles.bin
+*.lock
