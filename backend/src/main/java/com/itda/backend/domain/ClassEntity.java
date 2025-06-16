@@ -38,10 +38,13 @@ public class ClassEntity {
     private String curriculum;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private ClassLevel level = ClassLevel.초급;
 
     @Enumerated(EnumType.STRING)
-    private OnOffType onoff = OnOffType.온라인;
+    @Builder.Default
+    private OnOffType onoff = OnOffType.오프라인;
+
 
     @Setter
     private String mainImage;

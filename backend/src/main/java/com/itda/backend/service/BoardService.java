@@ -13,8 +13,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class BoardService extends GenericService<Optional<Board>> {
-
+public class BoardService extends GenericService<Board> {
     private final BoardRepository boardRepository;
 
     public BoardService(BoardRepository boardRepository) {
@@ -22,12 +21,13 @@ public class BoardService extends GenericService<Optional<Board>> {
         this.boardRepository = boardRepository;
     }
 
-    public Optional<Board> findById(Long id) {
+    public Optional<Board> findOptionalById(Long id) {
         return boardRepository.findById(id);
     }
 
+
     public List<Board> getBoardsByType(BoardType type) {
-        return boardRepository.findByType(type);
+        return boardRepository.findByTypeOrderByCreatedAtDesc(type);
     }
 
     public void savePost(BoardWriteRequestDto dto, Member writer) {

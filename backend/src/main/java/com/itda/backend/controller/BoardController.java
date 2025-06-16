@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/board")
@@ -23,7 +24,7 @@ public class BoardController {
 
     @GetMapping("/{id}")
     public ResponseEntity<BoardResponseDto> getPostById(@PathVariable Long id) {
-        return boardService.findById(id)
+        return boardService.findOptionalById(id)
                 .map(BoardResponseDto::from)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -36,7 +37,7 @@ public class BoardController {
             List<Board> boards = boardService.getBoardsByType(type);
             List<BoardResponseDto> dtos = boards.stream()
                     .map(BoardResponseDto::from)
-                    .toList(); // Java 16+ or collect(Collectors.toList())
+                    .collect(Collectors.toList());// Java 16+ or collect(Collectors.toList())
 
             return ResponseEntity.ok(dtos);
         } catch (IllegalArgumentException e) {
