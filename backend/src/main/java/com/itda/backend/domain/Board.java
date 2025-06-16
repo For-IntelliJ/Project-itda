@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -35,8 +37,24 @@ public class Board {
 
     private LocalDateTime createdAt;
 
+    // 태그 연결 정보 추가
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<BoardTag> boardTags = new ArrayList<>();
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    // 편의 메서드 (선택 사항)
+    public void addBoardTag(BoardTag boardTag) {
+        this.boardTags.add(boardTag);
+        boardTag.setBoard(this);
+    }
+
+    public void removeBoardTag(BoardTag boardTag) {
+        this.boardTags.remove(boardTag);
+        boardTag.setBoard(null);
     }
 }

@@ -1,10 +1,11 @@
 package com.itda.backend.service;
 
-import com.itda.backend.domain.Board;
-import com.itda.backend.domain.Member;
+import com.itda.backend.domain.*;
 import com.itda.backend.domain.enums.BoardType;
 import com.itda.backend.dto.BoardWriteRequestDto;
 import com.itda.backend.repository.BoardRepository;
+import com.itda.backend.repository.TagRepository;
+import com.itda.backend.repository.BoardTagRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +16,18 @@ import java.util.Optional;
 @Service
 public class BoardService extends GenericService<Board> {
     private final BoardRepository boardRepository;
+    private final TagRepository tagRepository;
+    private final BoardTagRepository boardTagRepository;
 
-    public BoardService(BoardRepository boardRepository) {
+    public BoardService(
+            BoardRepository boardRepository,
+            TagRepository tagRepository,
+            BoardTagRepository boardTagRepository
+    ) {
         super(boardRepository);
         this.boardRepository = boardRepository;
+        this.tagRepository = tagRepository;
+        this.boardTagRepository = boardTagRepository;
     }
 
     public Optional<Board> findOptionalById(Long id) {
@@ -45,6 +54,22 @@ public class BoardService extends GenericService<Board> {
         board.setContent(dto.getContent());
         board.setWriter(writer);
         board.setType(type);
+
+        // 태그 처리
+        if (dto.getTags() != null && !dto.getTags().isEmpty()) {
+            for (String tagName : dto.getTags()) {
+                Tag tag = tagRepository.findByName(tagName)
+                        .orElseGet(() -> tagRepository.save(Tag.builder().name(tagName).build()));
+
+                BoardTag boardTag = BoardTag.builder()
+                        .board(board)
+                        .tag(tag)
+                        .id(new BoardTagId(null, tag.getId())) // id는 persist 후 자동 할당됨
+                        .build();
+
+                board.addBoardTag(boardTag);
+            }
+        }
 
         boardRepository.save(board);
         log.info("✅ 게시글 저장 완료 (제목: {}, 작성자 ID: {})", board.getTitle(), writer.getId());

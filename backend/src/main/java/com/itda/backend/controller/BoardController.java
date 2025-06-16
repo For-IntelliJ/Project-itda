@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/board")
 @RequiredArgsConstructor
+@RequestMapping("/api/boards")
 public class BoardController {
 
     private final BoardService boardService;

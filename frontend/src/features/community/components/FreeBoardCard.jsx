@@ -17,7 +17,7 @@ function FreeBoardCard({ id, title, writer, date, content, likeCount = 0, commen
             </p>
             <p className="text-gray-800 line-clamp-2">{content}</p>
             <div className="text-sm text-gray-500 mt-2">
-                ❤️ {likeCount} · 💬 {commentCount}
+                ❤️ {likeCount || 0} · 💬 {commentCount || 0}
             </div>
         </div>
     );

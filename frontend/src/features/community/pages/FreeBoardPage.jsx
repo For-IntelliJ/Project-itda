@@ -12,7 +12,7 @@ function FreeBoardPage() {
     const pageSize = 5; // 원하는 페이지 크기
 
     useEffect(() => {
-        axios.get("/api/board/list?type=FREE")
+        axios.get("/api/boards/list?type=FREE")
             .then(res => {
                 console.log("✅ 불러온 게시글 목록:", res.data);
                 setPosts(res.data);
@@ -21,6 +21,7 @@ function FreeBoardPage() {
                 console.error("❌ 게시글 로딩 실패:", err);
             });
     }, []);
+
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
