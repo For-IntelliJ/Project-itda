@@ -95,7 +95,9 @@ function EditProfile() {
     //이중확인창에서 취소 클릭시 닫히는 함수
     const closeCancelModal = () => {
         setIsCancelModalOpen(false);
+        navigate('/mypage?tab=profilesettings');
     };
+
 
 
     const handleChange = (e) => {
