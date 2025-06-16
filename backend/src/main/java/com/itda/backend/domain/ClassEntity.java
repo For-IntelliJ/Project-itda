@@ -1,5 +1,7 @@
 package com.itda.backend.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.itda.backend.domain.enums.ClassLevel;
 import com.itda.backend.domain.enums.OnOffType;
 import jakarta.persistence.*;
@@ -13,6 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @Table(name = "class")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ClassEntity {
 
     @Id
@@ -21,17 +24,17 @@ public class ClassEntity {
 
     // ❗ 꼭 필요한 경우에만 setter 작성 (예: mentor를 나중에 지정해야 할 때)
     @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "mentor_id", nullable = false)
     private Member mentor;
 
     private String title;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "region_id", nullable = false)
     private Region region;
 
@@ -45,9 +48,9 @@ public class ClassEntity {
     @Builder.Default
     private OnOffType onoff = OnOffType.오프라인;
 
-
     @Setter
     private String mainImage;
+    
     private String detailContent;
 
     private LocalDateTime createdAt;
@@ -57,14 +60,5 @@ public class ClassEntity {
         this.createdAt = LocalDateTime.now();
     }
 
-    public void setCategory(Category category) {
-    }
 
-    public void setRegion(Region region) {
-
-    }
-
-    public Object getClassname() {
-        return this.title;
-    }
 }

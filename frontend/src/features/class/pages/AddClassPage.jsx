@@ -2,29 +2,32 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
 const AddClassPage = () => {
+    // --- Auth check ---
+    const [userRole, setUserRole] = useState(null); // 'MENTOR', 'MENTEE', null
+    const [isLoading, setIsLoading] = useState(true);
+
     // --- Step state ---
-    const [mainStep, setMainStep] = useState(0);            // 0: 온/오프라인 선택
-    const [step2SubStep, setStep2SubStep] = useState(0);    // 1-0 ~ 1-3: 세부 스텝들
+    const [mainStep, setMainStep] = useState(0);            // 0: Step1, 1: Step2
+    const [step2SubStep, setStep2SubStep] = useState(0);    // Step2의 세부 스텝들
 
     // --- Data state ---
     const [categories, setCategories] = useState([]);
     const [regions, setRegions] = useState([]);
-    const [mentorName, setMentorName] = useState('');
+    const [mentorInfo, setMentorInfo] = useState({ name: '', intro: '' });
 
     // --- Form fields ---
     const [formData, setFormData] = useState({
+        // Step 1
         onlineOffline: '',
         title: '',
         categoryId: '',
+        
+        // Step 2
         mainImage: null,
-        detailImage: null,
-        detail: '',
+        detailContent: '',
         curriculumDifficulty: '',
         curriculum: '',
-        mentorIntro: '',
-        spaceRegionId: '',
-        spaceRegionName: '',
-        spaceAddress: ''
+        spaceRegionId: ''
     });
 
     // --- Default image URL ---
@@ -36,8 +39,53 @@ const AddClassPage = () => {
         '0': useRef(null),
         '1-0': useRef(null),
         '1-1': useRef(null),
-        '1-2': useRef(null),
-        '1-3': useRef(null)
+        '1-2': useRef(null)
+    };
+
+    // --- Check user authentication and role ---
+    useEffect(() => {
+        const checkUserRole = async () => {
+            try {
+                // TODO: 실제 로그인 사용자 정보를 가져오는 API로 변경
+                const response = await axios.get('/api/members/me');
+                const user = response.data;
+                
+                if (user.role !== 'MENTOR') {
+                    alert('멘토만 선택이 가능합니다. 이 기능을 이용하시려면 멘토 신청을 해주세요.');
+                    window.history.back(); // 이전 페이지로 돌아가기
+                    return;
+                }
+                
+                setUserRole(user.role);
+                setIsLoading(false);
+                
+                // 멘토 정보 가져오기
+                await fetchMentorInfo(user.id);
+                
+            } catch (error) {
+                console.error('사용자 인증 실패:', error);
+                alert('멘토만 선택이 가능합니다. 이 기능을 이용하시려면 멘토 신청을 해주세요.');
+                window.history.back();
+            }
+        };
+
+        checkUserRole();
+    }, []);
+
+    // --- Fetch mentor profile info ---
+    const fetchMentorInfo = async (userId) => {
+        try {
+            const response = await axios.get(`/api/mentor-profiles/user/${userId}`);
+            const mentorProfile = response.data;
+            setMentorInfo({
+                name: mentorProfile.user.username,
+                intro: mentorProfile.intro || ''
+            });
+        } catch (error) {
+            console.error('멘토 정보 로드 실패:', error);
+            // 기본값 설정
+            setMentorInfo({ name: '멘토', intro: '' });
+        }
     };
 
     // --- Fetch initial data ---
@@ -55,20 +103,12 @@ const AddClassPage = () => {
             } catch (e) {
                 console.error('지역 로드 실패:', e);
             }
-            try {
-                const resMentor = await axios.get('/api/users/1');
-                setMentorName(resMentor.data.username);
-            } catch (e) {
-                console.error('멘토 로드 실패:', e);
-            }
         };
-        fetchInitialData();
-    }, []);
-
-    // --- Debug logging ---
-    useEffect(() => { console.log('categories:', categories); }, [categories]);
-    useEffect(() => { console.log('regions:', regions); }, [regions]);
-    useEffect(() => { console.log('mentorName:', mentorName); }, [mentorName]);
+        
+        if (userRole === 'MENTOR') {
+            fetchInitialData();
+        }
+    }, [userRole]);
 
     // --- Handlers ---
     const handleChange = e => {
@@ -91,7 +131,7 @@ const AddClassPage = () => {
             setMainStep(1);
             setStep2SubStep(0);
             scrollToSection('1-0');
-        } else if (step2SubStep < 3) {
+        } else if (step2SubStep < 2) {
             const next = step2SubStep + 1;
             setStep2SubStep(next);
             scrollToSection(`1-${next}`);
@@ -119,198 +159,239 @@ const AddClassPage = () => {
 
     const handleSubmit = async e => {
         e.preventDefault();
+        
+        // 필수 필드 검증
+        if (!formData.title || !formData.categoryId || !formData.onlineOffline || !formData.curriculum || !formData.curriculumDifficulty || !formData.spaceRegionId) {
+            alert('모든 필수 항목을 입력해주세요.');
+            return;
+        }
+        
         const classData = {
-            classname: formData.title,
-            mento: { id: 1 },
-            mentoInfo: formData.mentorIntro,
-            category: { id: +formData.categoryId },
+            title: formData.title,
+            categoryId: +formData.categoryId,
             curriculum: formData.curriculum,
             onoff: formData.onlineOffline === 'online' ? '온라인' : '오프라인',
             level: formData.curriculumDifficulty,
-            detailContent: formData.detail,
-            spaceInfo: formData.spaceRegionName,
-            addr: formData.spaceAddress,
-            region: { id: +formData.spaceRegionId },
-            mainImagePath: formData.mainImage ? null : DEFAULT_IMAGE_URL,
-            detailImagePath: formData.detailImage ? null : DEFAULT_IMAGE_URL
+            detailContent: formData.detailContent,
+            regionId: +formData.spaceRegionId,
+            mainImage: formData.mainImage ? null : DEFAULT_IMAGE_URL
         };
 
         try {
             let response;
-            if (formData.mainImage || formData.detailImage) {
+            if (formData.mainImage) {
                 const fd = new FormData();
                 fd.append('classData', new Blob([JSON.stringify(classData)], { type: 'application/json' }));
-                formData.mainImage && fd.append('mainImage', formData.mainImage);
-                formData.detailImage && fd.append('detailImage', formData.detailImage);
-                response = await axios.post('/api/classes/with-files', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+                fd.append('mainImage', formData.mainImage);
+                response = await axios.post('/api/classes/with-files', fd, { 
+                    headers: { 'Content-Type': 'multipart/form-data' } 
+                });
             } else {
                 response = await axios.post('/api/classes', classData);
             }
             console.log('서버 응답:', response.data);
             alert('클래스 생성 성공!');
+            // 성공 시 메인 페이지로 이동
+            window.location.href = '/';
         } catch (err) {
             console.error('에러:', err);
             alert(`클래스 생성 실패: ${err.response?.data || err.message}`);
         }
     };
 
+    // --- Loading state ---
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <p className="text-gray-500">로딩 중...</p>
+            </div>
+        );
+    }
+
     // --- Render content by step ---
     const renderContent = () => {
         if (mainStep === 0) {
             return (
                 <section ref={stepRefs['0']} className="mb-6">
-                    <h2 className="text-2xl font-bold mb-4">Step 1: 온/오프라인 선택</h2>
-                    <p className="mb-6 text-gray-600">온라인 또는 오프라인 중 하나를 선택하세요.</p>
-                    <div className="space-y-3">
-                        <label className="flex items-center cursor-pointer">
-                            <input
-                                type="radio"
-                                name="onlineOffline"
-                                value="online"
-                                checked={formData.onlineOffline === 'online'}
-                                onChange={handleChange}
-                                className="mr-3 text-[#3D4EFE]"
-                            />
-                            <span className="text-lg">온라인</span>
-                        </label>
-                        <label className="flex items-center cursor-pointer">
-                            <input
-                                type="radio"
-                                name="onlineOffline"
-                                value="offline"
-                                checked={formData.onlineOffline === 'offline'}
-                                onChange={handleChange}
-                                className="mr-3 text-[#3D4EFE]"
-                            />
-                            <span className="text-lg">오프라인</span>
-                        </label>
+                    <h2 className="text-2xl font-bold mb-4">Step 1: 기본 정보</h2>
+                    <p className="mb-6 text-gray-600">온/오프라인, 클래스 제목, 카테고리를 선택하세요.</p>
+                    
+                    {/* 온/오프라인 선택 */}
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">온/오프라인 *</label>
+                        <div className="space-y-3">
+                            <label className="flex items-center cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="onlineOffline"
+                                    value="online"
+                                    checked={formData.onlineOffline === 'online'}
+                                    onChange={handleChange}
+                                    className="mr-3 text-[#3D4EFE]"
+                                />
+                                <span className="text-lg">온라인</span>
+                            </label>
+                            <label className="flex items-center cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="onlineOffline"
+                                    value="offline"
+                                    checked={formData.onlineOffline === 'offline'}
+                                    onChange={handleChange}
+                                    className="mr-3 text-[#3D4EFE]"
+                                />
+                                <span className="text-lg">오프라인</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* 클래스 제목 */}
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">클래스 제목 *</label>
+                        <input
+                            name="title"
+                            placeholder="클래스 제목을 입력하세요"
+                            value={formData.title}
+                            onChange={handleChange}
+                            className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent"
+                        />
+                    </div>
+
+                    {/* 카테고리 선택 */}
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">카테고리 *</label>
+                        <select
+                            name="categoryId"
+                            value={formData.categoryId}
+                            onChange={handleChange}
+                            className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent"
+                        >
+                            <option value="">카테고리를 선택하세요</option>
+                            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
                     </div>
                 </section>
             );
         }
+        
         switch (step2SubStep) {
             case 0:
                 return (
                     <section ref={stepRefs['1-0']} className="mb-6">
-                        <h2 className="text-2xl font-bold mb-4">기본 정보</h2>
-                        <p className="mb-6 text-gray-600">제목, 카테고리, 이미지를 등록합니다.</p>
-                        <div className="space-y-4">
-                            <input
-                                name="title"
-                                placeholder="제목을 입력하세요"
-                                value={formData.title}
-                                onChange={handleChange}
-                                className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent"
-                            />
-                            <select
-                                name="categoryId"
-                                value={formData.categoryId}
-                                onChange={handleChange}
-                                className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent"
-                            >
-                                <option value="">카테고리 선택</option>
-                                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                            </select>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <label className="bg-[#3D4EFE] text-white py-3 px-4 rounded-md text-center cursor-pointer hover:bg-[#2c3ed9] font-medium">
+                        <h2 className="text-2xl font-bold mb-4">Step 2-1: 이미지 및 상세 설명</h2>
+                        <p className="mb-6 text-gray-600">메인 이미지와 상세 설명을 등록합니다.</p>
+                        
+                        <div className="space-y-6">
+                            {/* 메인 이미지 */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">메인 이미지</label>
+                                <label className="bg-[#3D4EFE] text-white py-3 px-4 rounded-md text-center cursor-pointer hover:bg-[#2c3ed9] font-medium inline-block">
                                     메인 이미지 등록
                                     <input type="file" accept="image/*" onChange={e => handleFileChange(e, 'mainImage')} className="hidden" />
                                 </label>
-                                <label className="bg-[#3D4EFE] text-white py-3 px-4 rounded-md text-center cursor-pointer hover:bg-[#2c3ed9] font-medium">
-                                    상세 이미지 등록
-                                    <input type="file" accept="image/*" onChange={e => handleFileChange(e, 'detailImage')} className="hidden" />
-                                </label>
+                                {formData.mainImage && (
+                                    <p className="text-sm text-gray-600 mt-2">선택된 파일: {formData.mainImage.name}</p>
+                                )}
                             </div>
-                            <textarea
-                                name="detail"
-                                rows={4}
-                                placeholder="상세 설명을 입력하세요"
-                                value={formData.detail}
-                                onChange={handleChange}
-                                className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent resize-none"
-                            />
+                            
+                            {/* 상세 설명 */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">상세 설명</label>
+                                <textarea
+                                    name="detailContent"
+                                    rows={6}
+                                    placeholder="클래스에 대한 상세 설명을 입력하세요"
+                                    value={formData.detailContent}
+                                    onChange={handleChange}
+                                    className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent resize-none"
+                                />
+                            </div>
                         </div>
                     </section>
                 );
             case 1:
                 return (
                     <section ref={stepRefs['1-1']} className="mb-6">
-                        <h2 className="text-2xl font-bold mb-4">커리큘럼</h2>
+                        <h2 className="text-2xl font-bold mb-4">Step 2-2: 커리큘럼</h2>
                         <p className="mb-6 text-gray-600">난이도와 커리큘럼 내용을 작성하세요.</p>
-                        <div className="space-y-4">
-                            <select
-                                name="curriculumDifficulty"
-                                value={formData.curriculumDifficulty}
-                                onChange={handleChange}
-                                className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent"
-                            >
-                                <option value="">난이도 선택</option>
-                                <option value="초급">초급</option>
-                                <option value="중급">중급</option>
-                                <option value="고급">고급</option>
-                            </select>
-                            <textarea
-                                name="curriculum"
-                                rows={6}
-                                placeholder="커리큘럼 내용을 입력하세요"
-                                value={formData.curriculum}
-                                onChange={handleChange}
-                                className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent resize-none"
-                            />
+                        
+                        <div className="space-y-6">
+                            {/* 난이도 선택 */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">난이도 *</label>
+                                <select
+                                    name="curriculumDifficulty"
+                                    value={formData.curriculumDifficulty}
+                                    onChange={handleChange}
+                                    className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent"
+                                >
+                                    <option value="">난이도를 선택하세요</option>
+                                    <option value="초급">초급</option>
+                                    <option value="중급">중급</option>
+                                    <option value="고급">고급</option>
+                                </select>
+                            </div>
+                            
+                            {/* 커리큘럼 */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">커리큘럼 *</label>
+                                <textarea
+                                    name="curriculum"
+                                    rows={8}
+                                    placeholder="커리큘럼 내용을 상세히 입력하세요&#10;예)&#10;STEP 1: 기초 이론 학습&#10;STEP 2: 실습 진행&#10;STEP 3: 결과물 완성"
+                                    value={formData.curriculum}
+                                    onChange={handleChange}
+                                    className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent resize-none"
+                                />
+                            </div>
                         </div>
                     </section>
                 );
             case 2:
                 return (
                     <section ref={stepRefs['1-2']} className="mb-6">
-                        <h2 className="text-2xl font-bold mb-4">멘토 소개</h2>
-                        <p className="mb-6 text-gray-600">멘토 이름과 소개글을 입력합니다.</p>
-                        <div className="space-y-4">
-                            <input
-                                type="text"
-                                value={mentorName}
-                                disabled
-                                className="border border-gray-300 w-full p-3 rounded-md bg-gray-100 text-gray-500"
-                                placeholder="멘토 이름"
-                            />
-                            <textarea
-                                name="mentorIntro"
-                                rows={4}
-                                placeholder="멘토 소개글을 입력하세요"
-                                value={formData.mentorIntro}
-                                onChange={handleChange}
-                                className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent resize-none"
-                            />
-                        </div>
-                    </section>
-                );
-            case 3:
-                return (
-                    <section ref={stepRefs['1-3']} className="mb-6">
-                        <h2 className="text-2xl font-bold mb-4">공간 정보</h2>
-                        <p className="mb-6 text-gray-600">공간 지역과 상세 주소를 입력하세요.</p>
-                        <div className="space-y-4">
-                            <select
-                                name="spaceRegionId"
-                                value={formData.spaceRegionId}
-                                onChange={e => {
-                                    const id = e.target.value;
-                                    const name = regions.find(r => r.id.toString() === id)?.name || '';
-                                    setFormData(prev => ({ ...prev, spaceRegionId: id, spaceRegionName: name }));
-                                }}
-                                className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent"
-                            >
-                                <option value="">지역 선택</option>
-                                {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                            </select>
-                            <input
-                                type="text"
-                                name="spaceAddress"
-                                placeholder="상세 주소를 입력하세요"
-                                value={formData.spaceAddress}
-                                onChange={handleChange}
-                                className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent"
-                            />
+                        <h2 className="text-2xl font-bold mb-4">Step 2-3: 공간 정보</h2>
+                        <p className="mb-6 text-gray-600">클래스가 진행될 지역을 선택하세요.</p>
+                        
+                        <div className="space-y-6">
+                            {/* 멘토 정보 (읽기 전용) */}
+                            <div className="bg-gray-50 p-4 rounded-md border">
+                                <h3 className="text-lg font-semibold mb-3 text-gray-700">멘토 정보</h3>
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">멘토 이름</label>
+                                        <input
+                                            type="text"
+                                            value={mentorInfo.name}
+                                            disabled
+                                            className="border border-gray-300 w-full p-3 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">멘토 소개</label>
+                                        <textarea
+                                            value={mentorInfo.intro}
+                                            disabled
+                                            rows={3}
+                                            className="border border-gray-300 w-full p-3 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed resize-none"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 지역 선택 */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">지역 선택 *</label>
+                                <select
+                                    name="spaceRegionId"
+                                    value={formData.spaceRegionId}
+                                    onChange={handleChange}
+                                    className="border border-gray-300 w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] focus:border-transparent"
+                                >
+                                    <option value="">지역을 선택하세요</option>
+                                    {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                </select>
+                            </div>
                         </div>
                     </section>
                 );
@@ -347,7 +428,7 @@ const AddClassPage = () => {
                             className="cursor-pointer text-sm text-gray-600 hover:text-[#3D4EFE] py-1"
                             onClick={() => handleStepClick(0)}
                         >
-                            온/오프라인
+                            기본 정보
                         </li>
                     </ul>
 
@@ -371,7 +452,7 @@ const AddClassPage = () => {
                             }`}
                             onClick={() => handleStepClick(1, 0)}
                         >
-                            기본 정보
+                            이미지/설명
                         </li>
                         <li
                             className={`cursor-pointer text-sm py-1 ${
@@ -387,14 +468,6 @@ const AddClassPage = () => {
                             }`}
                             onClick={() => handleStepClick(1, 2)}
                         >
-                            멘토 소개
-                        </li>
-                        <li
-                            className={`cursor-pointer text-sm py-1 ${
-                                mainStep === 1 && step2SubStep === 3 ? 'text-[#3D4EFE] font-medium' : 'text-gray-600 hover:text-[#3D4EFE]'
-                            }`}
-                            onClick={() => handleStepClick(1, 3)}
-                        >
                             공간 정보
                         </li>
                     </ul>
@@ -409,11 +482,16 @@ const AddClassPage = () => {
                         <button
                             type="button"
                             onClick={handlePrev}
-                            className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-6 rounded-md font-semibold"
+                            disabled={mainStep === 0}
+                            className={`py-2 px-6 rounded-md font-semibold ${
+                                mainStep === 0 
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                                    : 'bg-gray-300 hover:bg-gray-400 text-gray-800'
+                            }`}
                         >
                             이전
                         </button>
-                        {(mainStep === 0 || step2SubStep < 3) ? (
+                        {(mainStep === 0 || step2SubStep < 2) ? (
                             <button
                                 type="button"
                                 onClick={handleNext}
@@ -435,6 +513,5 @@ const AddClassPage = () => {
         </div>
     );
 };
-
 
 export default AddClassPage;

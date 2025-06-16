@@ -1,7 +1,32 @@
 import React from "react";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function Header() {
+  const navigate = useNavigate();
+
+  // 클래스 등록 버튼 클릭 핸들러
+  const handleAddClassClick = async (e) => {
+    e.preventDefault();
+    
+    try {
+      // 로그인 상태 및 사용자 역할 확인
+      const response = await axios.get('/api/members/me');
+      const user = response.data;
+      
+      if (user.role === 'MENTOR') {
+        // 멘토라면 클래스 등록 페이지로 이동
+        navigate('/addclass');
+      } else {
+        // 멘토가 아니면 알림 표시
+        alert('멘토만 선택이 가능합니다. 이 기능을 이용하시려면 멘토 신청을 해주세요.');
+      }
+    } catch (error) {
+      // 로그인되지 않았거나 오류 발생 시
+      console.error('사용자 인증 실패:', error);
+      alert('멘토만 선택이 가능합니다. 이 기능을 이용하시려면 멘토 신청을 해주세요.');
+    }
+  };
   return (
       <div className="flex flex-col pt-4 mb-1">
         {/* 헤더 */}
@@ -25,7 +50,12 @@ function Header() {
                     <a href="#more" className="font-pretendard hover:text-hover hover:font-bold">더보기</a>
                   </li>
                   <li>
-                    <Link to="/addclass" className="font-pretendard hover:text-hover hover:font-bold">클래스등록</Link>
+                    <button 
+                      onClick={handleAddClassClick}
+                      className="font-pretendard hover:text-hover hover:font-bold cursor-pointer"
+                    >
+                      클래스등록
+                    </button>
                   </li>
                   <li>
                     <Link to="/login" className="font-pretendard hover:text-hover hover:font-bold">로그인</Link>

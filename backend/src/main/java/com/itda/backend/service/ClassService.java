@@ -5,6 +5,7 @@ import com.itda.backend.domain.Category;
 import com.itda.backend.domain.Region;
 import com.itda.backend.domain.Member;
 import com.itda.backend.dto.ClassCreateRequestDto;
+import com.itda.backend.dto.ClassResponseDto;
 import com.itda.backend.repository.ClassRepository;
 import com.itda.backend.repository.CategoryRepository;
 import com.itda.backend.repository.RegionRepository;
@@ -13,6 +14,7 @@ import com.itda.backend.mapper.ClassMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ClassService {
@@ -46,6 +48,13 @@ public class ClassService {
 
     public List<ClassEntity> findAll() {
         return classRepository.findAll();
+    }
+
+    public List<ClassResponseDto> findAllAsDto() {
+        List<ClassEntity> entities = classRepository.findAll();
+        return entities.stream()
+                .map(ClassMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public ClassEntity findById(Long id) {

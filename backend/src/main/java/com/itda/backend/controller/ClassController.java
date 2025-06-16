@@ -2,6 +2,7 @@ package com.itda.backend.controller;
 
 import com.itda.backend.domain.ClassEntity;
 import com.itda.backend.dto.ClassCreateRequestDto;
+import com.itda.backend.dto.ClassResponseDto;
 import com.itda.backend.service.ClassService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -71,16 +72,43 @@ public class ClassController {
      * 모든 클래스 조회
      */
     @GetMapping
-    public List<ClassEntity> getAllClasses() {
-        return classService.findAll();
+    public ResponseEntity<List<ClassResponseDto>> getAllClasses() {
+        try {
+            System.out.println(">> [DEBUG] 클래스 목록 요청 시작");
+            
+            List<ClassResponseDto> classes = classService.findAllAsDto();
+            System.out.println(">> [DEBUG] 찾은 클래스 개수: " + classes.size());
+            
+            // 각 클래스의 정보 체크
+            for (ClassResponseDto cls : classes) {
+                System.out.println(">> [DEBUG] 클래스 ID: " + cls.getId() + ", 이름: " + cls.getTitle());
+                System.out.println("  - 멘토: " + cls.getMentorName());
+                System.out.println("  - 카테고리: " + cls.getCategoryName());
+                System.out.println("  - 지역: " + cls.getRegionName());
+            }
+            
+            System.out.println(">> [DEBUG] DTO 반환 준비 완료");
+            
+            return ResponseEntity.ok(classes);
+        } catch (Exception e) {
+            System.out.println(">> [ERROR] 클래스 목록 조회 중 오류 발생:");
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
      * ID로 클래스 조회
      */
     @GetMapping("/{id}")
-    public ClassEntity getClassById(@PathVariable Long id) {
-        return classService.findById(id);
+    public ResponseEntity<ClassEntity> getClassById(@PathVariable Long id) {
+        try {
+            ClassEntity classEntity = classService.findById(id);
+            return ResponseEntity.ok(classEntity);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /**

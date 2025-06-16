@@ -1,5 +1,6 @@
 package com.itda.backend.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.itda.backend.domain.enums.Gender;
 import com.itda.backend.domain.enums.Role;
 import com.itda.backend.domain.enums.LoginType;
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "member")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Member {
 
     @Id
