@@ -6,11 +6,16 @@
 class GoogleCalendarService {
   constructor() {
     this.config = {
-      apiKey: 'AIzaSyBoMVGs84MNrYY7PuIhAZ6a4myQkhsGUcc',
-      clientId: '1032454439486-10nd5f59qtpks3r1vkqajcgvkl1uooi0.apps.googleusercontent.com',
+      apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
+      clientId: process.env.REACT_APP_GOOGLE_CLIENT_ID,
       discoveryDoc: 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest',
       scopes: 'https://www.googleapis.com/auth/calendar'
     };
+    
+    // 환경변수 확인
+    if (!this.config.apiKey || !this.config.clientId) {
+      console.error('Google API 설정이 누락되었습니다. .env 파일을 확인하세요.');
+    }
     
     this.isInitialized = false;
     this.isSignedIn = false;
