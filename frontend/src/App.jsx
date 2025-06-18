@@ -3,7 +3,6 @@ import {BrowserRouter as Router, Route, Routes, useLocation} from "react-router-
 // 공통 컴포넌트
 import Header from "./features/common/components/Header";
 import Footer from "./features/common/components/Footer";
-import ApiTest from "./features/common/components/ApiTest";
 // 페이지 컴포넌트
 import JoinPage from "./features/auth/pages/JoinPage";
 import LoginPage from "./features/auth/pages/LoginPage";
@@ -54,9 +53,6 @@ function LayoutWrapper() {
 
                     {/* 클래스 상세 페이지 */}
                     <Route path="/class/:id" element={<ClassDetailPage />} />
-                    
-                    {/* API 테스트 페이지 (개발용) */}
-                    <Route path="/api-test" element={<ApiTest />} />
 
                 </Routes>
             </main>
