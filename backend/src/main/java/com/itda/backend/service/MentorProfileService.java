@@ -17,6 +17,10 @@ public class MentorProfileService {
         return mentorProfileRepository.findByUserId(userId);
     }
 
+    public java.util.List<MentorProfile> findAll() {
+        return mentorProfileRepository.findAll();
+    }
+
     public boolean existsByUserId(Long userId) {
         return mentorProfileRepository.existsByUserId(userId);
     }

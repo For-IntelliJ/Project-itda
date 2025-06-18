@@ -22,9 +22,10 @@ function Header() {
         alert('멘토만 선택이 가능합니다. 이 기능을 이용하시려면 멘토 신청을 해주세요.');
       }
     } catch (error) {
-      // 로그인되지 않았거나 오류 발생 시
+      // 로그인되지 않았거나 오류 발생 시 - 테스트를 위해 임시로 허용
       console.error('사용자 인증 실패:', error);
-      alert('멘토만 선택이 가능합니다. 이 기능을 이용하시려면 멘토 신청을 해주세요.');
+      console.log('테스트 모드: 클래스 등록 페이지로 이동');
+      navigate('/addclass'); // 테스트를 위해 바로 이동
     }
   };
   return (
@@ -56,6 +57,11 @@ function Header() {
                     >
                       클래스등록
                     </button>
+                  </li>
+                  <li>
+                    <Link to="/addclass" className="font-pretendard hover:text-hover hover:font-bold text-sm">
+                      (직접접근)
+                    </Link>
                   </li>
                   <li>
                     <Link to="/login" className="font-pretendard hover:text-hover hover:font-bold">로그인</Link>

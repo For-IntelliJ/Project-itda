@@ -37,6 +37,42 @@ public class ClassEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "region_id", nullable = false)
     private Region region;
+    
+    // ID 직접 접근을 위한 getter 메소드들
+    public Long getMentorId() {
+        return mentor != null ? mentor.getId() : null;
+    }
+    
+    public Long getCategoryId() {
+        return category != null ? category.getId() : null;
+    }
+    
+    public Long getRegionId() {
+        return region != null ? region.getId() : null;
+    }
+    
+    // 멘토 프로필 정보 getter (필요시 사용)
+    public String getMentorIntro() {
+        // mentoInfo 필드를 우선 사용하고, 없으면 MentorProfile에서 가져오기
+        if (mentoInfo != null && !mentoInfo.trim().isEmpty()) {
+            return mentoInfo;
+        }
+        try {
+            return mentor != null && mentor.getMentorProfile() != null ? 
+                   mentor.getMentorProfile().getIntro() : null;
+        } catch (Exception e) {
+            return null; // Lazy Loading 실패시 null 반환
+        }
+    }
+    
+    public String getMentorCareer() {
+        try {
+            return mentor != null && mentor.getMentorProfile() != null ? 
+                   mentor.getMentorProfile().getCareer() : null;
+        } catch (Exception e) {
+            return null; // Lazy Loading 실패시 null 반환
+        }
+    }
 
     private String curriculum;
 
@@ -52,6 +88,14 @@ public class ClassEntity {
     private String mainImage;
     
     private String detailContent;
+    
+    // 멘토 소개 정보
+    @Column(columnDefinition = "TEXT")
+    private String mentoInfo;
+    
+    // 공간/위치 정보  
+    @Column(columnDefinition = "TEXT")
+    private String spaceInfo;
 
     private LocalDateTime createdAt;
 
@@ -59,6 +103,4 @@ public class ClassEntity {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
     }
-
-
 }
