@@ -15,7 +15,7 @@ const LoginForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:8080/api/member/login', formData, {
+            await axios.post('http://localhost:8080/api/members/login', formData, {
                 withCredentials: true,
             });
             alert('로그인 성공!');

@@ -42,6 +42,20 @@ public class MemberController {
         return ResponseEntity.ok("로그인 성공");
     }
 
+    // 세션 ID와 유지시간 확인용(개발/디버깅용)
+    @GetMapping("/session-info")
+    public ResponseEntity<?> getSessionInfo(HttpSession session) {
+        String sessionId = session.getId();
+        int timeout = session.getMaxInactiveInterval();
+        Object loginUser = session.getAttribute("loginUser");
+
+        if (loginUser == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        return ResponseEntity.ok("세션 ID: " + sessionId + ", 유지 시간: " + timeout + "초");
+    }
+
     // 현재 로그인한 사용자 정보 조회
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(HttpSession session) {

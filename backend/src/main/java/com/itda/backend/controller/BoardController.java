@@ -22,6 +22,18 @@ public class BoardController {
 
     private final BoardService boardService;
 
+    // ✅ 세션 확인용 GET 핸들러 추가
+    @GetMapping("/write")
+    public ResponseEntity<?> goWritePage(HttpSession session) {
+        Object sessionUser = session.getAttribute("loginUser");
+
+        if (!(sessionUser instanceof Member)) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        return ResponseEntity.ok("작성 페이지 접근 성공");
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<BoardResponseDto> getPostById(@PathVariable Long id) {
         return boardService.findOptionalById(id)

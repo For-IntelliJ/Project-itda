@@ -51,17 +51,7 @@ function Header() {
                     <a href="#more" className="font-pretendard hover:text-hover hover:font-bold">더보기</a>
                   </li>
                   <li>
-                    <button 
-                      onClick={handleAddClassClick}
-                      className="font-pretendard hover:text-hover hover:font-bold cursor-pointer"
-                    >
-                      클래스등록
-                    </button>
-                  </li>
-                  <li>
-                    <Link to="/addclass" className="font-pretendard hover:text-hover hover:font-bold text-sm">
-                      (직접접근)
-                    </Link>
+                    <Link to="/addclass" className="font-pretendard hover:text-hover hover:font-bold">클래스등록</Link>
                   </li>
                   <li>
                     <Link to="/login" className="font-pretendard hover:text-hover hover:font-bold">로그인</Link>
