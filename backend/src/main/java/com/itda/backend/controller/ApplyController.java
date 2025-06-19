@@ -1,7 +1,8 @@
 package com.itda.backend.controller;
 
-import com.itda.backend.domain.Apply;
-import com.itda.backend.domain.enums.MentorStatus;
+import com.itda.backend.domain.enums.ApplyStatus;
+import com.itda.backend.dto.ApplyRequestDto;
+import com.itda.backend.dto.ApplyResponseDto;
 import com.itda.backend.service.ApplyService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,25 +21,79 @@ public class ApplyController {
         this.applyService = applyService;
     }
 
-    // ✅ 클래스 신청
+    /**
+     * 클래스 신청
+     */
     @PostMapping
-    public ResponseEntity<?> applyToClass(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<?> applyToClass(@RequestBody ApplyRequestDto requestDto) {
         try {
-            Long classId = Long.parseLong(request.get("classId").toString());
-            Long menteeId = 3L; // 테스트용 멘티 ID (TODO: 인증된 사용자로 대체)
-
-            Apply apply = applyService.applyToClass(classId, menteeId);
-
+            System.out.println(">> [APPLY] 클래스 신청 요청: " + requestDto.getClassId() + ", 날짜: " + requestDto.getSelectedDate());
+            
+            ApplyResponseDto response = applyService.applyToClass(requestDto);
+            
+            System.out.println(">> [APPLY] 신청 완료: ID = " + response.getId());
+            
             Map<String, Object> result = new HashMap<>();
-            result.put("applyId", apply.getId());
-            result.put("classId", apply.getClassEntity().getId());
-            result.put("className", apply.getClassEntity().getClassname());
-            result.put("menteeId", apply.getMentee().getId());
-            result.put("menteeName", apply.getMentee().getUsername());
-            result.put("status", apply.getStatus().getDescription());
-            result.put("appliedAt", apply.getAppliedAt());
+            result.put("success", true);
+            result.put("message", "클래스 신청이 완료되었습니다.");
+            result.put("apply", response);
 
             return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            System.out.println(">> [APPLY ERROR] 신청 실패: " + e.getMessage());
+            e.printStackTrace();
+            
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * 멘티별 신청 내역 조회
+     */
+    @GetMapping("/mentee/{menteeId}")
+    public ResponseEntity<List<ApplyResponseDto>> getAppliesByMentee(@PathVariable Long menteeId) {
+        try {
+            List<ApplyResponseDto> applies = applyService.getAppliesByMentee(menteeId);
+            return ResponseEntity.ok(applies);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
+        }
+    }
+
+    /**
+     * 클래스별 신청 내역 조회
+     */
+    @GetMapping("/class/{classId}")
+    public ResponseEntity<List<ApplyResponseDto>> getAppliesByClass(@PathVariable Long classId) {
+        try {
+            List<ApplyResponseDto> applies = applyService.getAppliesByClass(classId);
+            return ResponseEntity.ok(applies);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
+        }
+    }
+
+    /**
+     * 신청 상태 변경 (멘토가 승인/거절)
+     */
+    @PutMapping("/{applyId}/status")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable Long applyId,
+            @RequestBody Map<String, String> request) {
+        try {
+            ApplyStatus status = ApplyStatus.valueOf(request.get("status").toUpperCase());
+            ApplyResponseDto response = applyService.updateApplyStatus(applyId, status);
+            
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "상태가 업데이트되었습니다.",
+                    "apply", response
+            ));
+            
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                     "success", false,
@@ -47,28 +102,17 @@ public class ApplyController {
         }
     }
 
-    // ✅ 멘티 기준 신청 목록 조회
-    @GetMapping("/mentee/{menteeId}")
-    public ResponseEntity<List<Apply>> getAppliesByMentee(@PathVariable Long menteeId) {
-        return ResponseEntity.ok(applyService.getAppliesByMentee(menteeId));
-    }
-
-    // ✅ 클래스 기준 신청 목록 조회
-    @GetMapping("/class/{classId}")
-    public ResponseEntity<List<Apply>> getAppliesByClass(@PathVariable Long classId) {
-        return ResponseEntity.ok(applyService.getAppliesByClass(classId));
-    }
-
-    // ✅ 신청 상태 변경
-    @PutMapping("/{applyId}/status")
-    public ResponseEntity<Apply> updateStatus(
-            @PathVariable Long applyId,
-            @RequestBody Map<String, String> request) {
+    /**
+     * 테스트용 - 현재 멘티 ID 10의 신청 내역 조회
+     */
+    @GetMapping("/my-applies")
+    public ResponseEntity<List<ApplyResponseDto>> getMyApplies() {
         try {
-            MentorStatus status = MentorStatus.valueOf(request.get("status"));
-            return ResponseEntity.ok(applyService.updateApplyStatus(applyId, status));
+            // 임시로 멘티 ID 10 사용
+            List<ApplyResponseDto> applies = applyService.getAppliesByMentee(10L);
+            return ResponseEntity.ok(applies);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
         }
     }
 }

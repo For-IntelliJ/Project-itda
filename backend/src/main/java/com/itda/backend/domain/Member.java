@@ -1,13 +1,21 @@
 package com.itda.backend.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.itda.backend.domain.enums.Gender;
 import com.itda.backend.domain.enums.Role;
 import com.itda.backend.domain.enums.LoginType;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "member")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Member {
 
     @Id
@@ -43,6 +51,10 @@ public class Member {
     private String kakaoId;
 
     private LocalDateTime createdAt;
+
+    // MentorProfile과의 관계 추가
+    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private MentorProfile mentorProfile;
 
     @PrePersist
     public void prePersist() {
@@ -137,5 +149,13 @@ public class Member {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public MentorProfile getMentorProfile() {
+        return mentorProfile;
+    }
+
+    public void setMentorProfile(MentorProfile mentorProfile) {
+        this.mentorProfile = mentorProfile;
     }
 }

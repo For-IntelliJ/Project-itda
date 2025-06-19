@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 // REST API 요청을 받아 회원 관련 요청을 처리하는 컨트롤러 클래스
 @RestController
-@RequestMapping("/api/member")
+@RequestMapping("/api/members")
 public class MemberController {
 
     private final MemberService memberService;
@@ -41,5 +41,23 @@ public class MemberController {
         session.setAttribute("loginUser", member); // ✅ 전체 Member 객체 저장
         return ResponseEntity.ok("로그인 성공");
     }
-}
 
+    // 현재 로그인한 사용자 정보 조회
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(HttpSession session) {
+        Member loginUser = (Member) session.getAttribute("loginUser");
+        
+        if (loginUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다");
+        }
+        
+        return ResponseEntity.ok(loginUser);
+    }
+
+    // 로그아웃 처리
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok("로그아웃 성공");
+    }
+}

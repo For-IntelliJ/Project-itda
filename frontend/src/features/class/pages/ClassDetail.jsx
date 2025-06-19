@@ -59,12 +59,27 @@ const ClassDetail = () => {
                     throw new Error(`클래스 정보를 불러오는 데 실패했습니다. (status ${res.status})`);
                 }
                 const data = await res.json();
+                
+                // 디버깅: 받은 데이터 전체 출력
+                console.log('=== 백엔드에서 받은 원본 데이터 ===');
+                console.log(JSON.stringify(data, null, 2));
+                console.log('사용 가능한 필드들:', Object.keys(data));
+                console.log('mentoInfo:', data.mentoInfo);
+                console.log('spaceInfo:', data.spaceInfo);
+                console.log('mentor 객체:', data.mentor);
+                console.log('region 객체:', data.region);
+                
                 const enriched = {
                     ...data,
                     mentor_name: data.mento?.username ?? data.mento?.name ?? "알 수 없음",
                     category_name: data.category?.name ?? "미분류",
                     detailImages: data.detail_images ? [data.detail_images] : [],
                 };
+                
+                console.log('=== 가공된 데이터 ===');
+                console.log('enriched.mentoInfo:', enriched.mentoInfo);
+                console.log('enriched.spaceInfo:', enriched.spaceInfo);
+                
                 setClassData(enriched);
                 setLoading(false);
             } catch (err) {
@@ -326,9 +341,19 @@ const ClassDetail = () => {
                             >
                                 멘토 소개
                             </h2>
-                            <p className="text-gray-800 leading-relaxed text-lg">
-                                {classData.mentoInfo || "멘토 소개 정보가 없습니다."}
-                            </p>
+                            <div className="flex items-start gap-4">
+                                <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span className="text-gray-500 text-2xl">👤</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-800 mb-2">
+                                        {classData.mentor?.name || classData.mentor?.username || "멘토명 없음"}
+                                    </h3>
+                                    <p className="text-gray-800 leading-relaxed text-lg">
+                                        {classData.mentoInfo || "멘토 소개 정보가 준비 중입니다."}
+                                    </p>
+                                </div>
+                            </div>
                         </section>
 
                         {/* 위치 */}
@@ -339,12 +364,16 @@ const ClassDetail = () => {
                             >
                                 위치
                             </h2>
-                            <p className="text-gray-800 leading-relaxed text-lg">
-                                {classData.spaceInfo || "공간 정보가 없습니다."}
-                            </p>
-                            <p className="text-gray-800 leading-relaxed text-lg">
-                                {classData.addr || "주소 정보가 없습니다."}
-                            </p>
+                            <div className="bg-gray-100 p-4 rounded-lg">
+                                <p className="font-semibold text-gray-800">
+                                    {classData.region?.name || "지역명 없음"}
+                                </p>
+                                {classData.spaceInfo && (
+                                    <p className="text-gray-800 leading-relaxed text-lg mt-2">
+                                        {classData.spaceInfo}
+                                    </p>
+                                )}
+                            </div>
                         </section>
                     </div>
                 </div>

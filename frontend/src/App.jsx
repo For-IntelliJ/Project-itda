@@ -17,7 +17,7 @@ import CommunityLayout from "./features/community/pages/CommunityLayout";
 import AskQuestionPage from "./features/community/pages/AskQuestionPage";
 import FreeBoardWritePage from "./features/community/pages/FreeBoardWritePage";
 import QuestionDetailPage from "./features/community/pages/QuestionDetailPage";
-import ClassDetail from "./features/class/pages/ClassDetail";
+import ClassDetailPage from "./features/class/pages/ClassDetailPage";
 import FreeBoardDetailPage from "./features/community/pages/FreeBoardDetailPage";
 
 function LayoutWrapper() {
@@ -52,7 +52,7 @@ function LayoutWrapper() {
                     <Route path="/community/freeboard/write" element={<FreeBoardWritePage />} />
 
                     {/* 클래스 상세 페이지 */}
-                    <Route path="/class/:id" element={<ClassDetail />} />
+                    <Route path="/class/:id" element={<ClassDetailPage />} />
 
                 </Routes>
             </main>

@@ -4,11 +4,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
 
 @Configuration
 public class SecurityConfig {
@@ -17,8 +12,11 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 허용 설정
+                .cors(cors -> cors.disable()) // CORS는 CorsConfig에서 처리
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/**").permitAll() // 모든 API 엔드포인트 허용
+                        .requestMatchers("/error").permitAll()  // 에러 페이지 허용
+                        .requestMatchers("/uploads/**").permitAll() // 업로드 파일 허용
                         .anyRequest().permitAll()
                 )
                 .sessionManagement(session -> session
@@ -26,19 +24,5 @@ public class SecurityConfig {
                 );
 
         return http.build();
-    }
-
-    // CORS 설정 (프론트 주소와 세션 쿠키 공유 허용)
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // React 개발 서버 주소
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(Arrays.asList("*"));
-        config.setAllowCredentials(true); // 쿠키 포함 허용
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
     }
 }

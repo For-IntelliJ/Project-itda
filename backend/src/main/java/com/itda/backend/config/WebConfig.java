@@ -2,6 +2,7 @@ package com.itda.backend.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -15,5 +16,16 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*") // 요청 헤더 허용
                 .allowCredentials(true) // 쿠키(세션) 허용
                 .maxAge(3600); // preflight 결과 캐시 시간 (초)
+    }
+    
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 업로드된 파일에 대한 정적 리소스 핸들러
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:uploads/");
+                
+        // 이미지 파일에 대한 핸들러 (uploads/classes/ 폴더용)
+        registry.addResourceHandler("/img/**")
+                .addResourceLocations("file:uploads/classes/");
     }
 }

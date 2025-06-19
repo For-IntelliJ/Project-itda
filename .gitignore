@@ -24,6 +24,7 @@
 .springBeans
 .factorypath
 .apt_generated
+node_modules/
 
 # === 프론트엔드 (React) ===
 /node_modules

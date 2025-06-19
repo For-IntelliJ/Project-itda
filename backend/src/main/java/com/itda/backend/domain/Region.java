@@ -1,9 +1,17 @@
 package com.itda.backend.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "region")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Region {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
