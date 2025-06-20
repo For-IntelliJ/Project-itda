@@ -22,3 +22,7 @@ code {
     font-weight: 400;
     src: url('//cdn.df.nexon.com/img/common/font/DNFBitBitv2.otf') format('opentype')
 }
+
+html{
+    overflow-y: scroll;
+}

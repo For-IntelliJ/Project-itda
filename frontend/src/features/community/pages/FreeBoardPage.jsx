@@ -38,8 +38,8 @@ function FreeBoardPage() {
     };
 
     return (
-        <div className="w-full max-w-3xl mx-auto py-10 px-4">
-            <h2 className="text-xl font-bold mb-6">자유게시판</h2>
+        <div className="w-full max-w-3xl mx-auto min-h-screen py-10 px-4">
+        <h2 className="text-xl font-bold mb-6">자유게시판</h2>
 
             <div className="space-y-4">
                 {paginatedData.map((post) => (

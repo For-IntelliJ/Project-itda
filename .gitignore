@@ -76,3 +76,6 @@ backend/src/main/resources/application.properties
 # 기타 무시할 파일들
 *.old
 *.pack
+*.pack
+*.pack
+*.old
