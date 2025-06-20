@@ -1,5 +1,7 @@
 package com.itda.backend.service;
 
+import com.itda.backend.domain.enums.LoginType;
+import com.itda.backend.domain.enums.Role;
 import com.itda.backend.dto.MemberLoginRequestDto;
 import com.itda.backend.mapper.MemberMapper;
 import com.itda.backend.domain.Member;
@@ -62,4 +64,37 @@ public class MemberService {
 
         return true;
     }
+
+    //별명과 카카오 id를 받아서 회원저장
+    public MemberResponseDto joinWithKakao(String kakaoId, String nickname) {
+        if (memberRepository.existsByKakaoId(kakaoId)) {
+            throw new IllegalArgumentException("이미 가입된 카카오 계정입니다.");
+        }
+
+        if (memberRepository.existsByNickname(nickname)) {
+            throw new IllegalArgumentException("이미 사용 중인 별명입니다.");
+        }
+
+        Member member = Member.builder()
+                .kakaoId(kakaoId)
+                .nickname(nickname)
+                .loginType(LoginType.KAKAO)
+                .role(Role.MENTEE)
+                .email("kakao_" + kakaoId + "@kakao.com")  // 임시 이메일
+                .username(nickname)  // 임시 사용자명으로 닉네임 사용
+                .phone("000-0000-0000")  // 임시 번호
+                .build();
+
+        log.debug("🟡 카카오 회원가입 요청: kakaoId={}, nickname={}", kakaoId, nickname);
+
+        Member saved = memberRepository.save(member);
+        return MemberMapper.toDto(saved);
+    }
+
+    //카카로 회원가입 유무 확인
+    public boolean existsByKakaoId(String kakaoId) {
+        return memberRepository.existsByKakaoId(kakaoId);
+    }
+
+
 }

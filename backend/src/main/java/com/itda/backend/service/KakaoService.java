@@ -31,11 +31,12 @@ public class KakaoService {
 
         Map<String, Object> body = response.getBody();
         if (body != null) {
-            Long id = ((Number) body.get("id")).longValue();  // ✅ 카카오 ID 가져오기
+
             Map<String, Object> kakaoAccount = (Map<String, Object>) body.get("kakao_account");
             Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
 
             String nickname = (String) profile.get("nickname");
+            String id = String.valueOf(body.get("id")); // id 문자열로 변경된 부분
 
             return new KakaoUserInfo(id, nickname);  // ✅ id 추가
         } else {

@@ -1,12 +1,19 @@
 package com.itda.backend.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Map;
+
 import com.itda.backend.dto.KakaoUserInfo;
 import com.itda.backend.service.KakaoService;
+import com.itda.backend.service.MemberService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
+
+
 
 // 이하 코드...
 
@@ -15,19 +22,21 @@ import java.util.Map;
 public class KakaoController {
 
     private final KakaoService kakaoService;
+    private final MemberService memberService;
 
-    public KakaoController(KakaoService kakaoService) {
+    public KakaoController(KakaoService kakaoService, MemberService memberService) {
         this.kakaoService = kakaoService;
+        this.memberService = memberService;
     }
 
     //카카오 콜백 인증코드 받음
     @GetMapping("/callback")
-    public void kakaoCallback(@RequestParam(required = false) String code, HttpServletResponse response) throws IOException {
+    public void kakaoCallback(@RequestParam(required = false) String code, HttpServletResponse response, HttpSession session) throws IOException {
         System.out.println("🔑 카카오 인증 코드: " + code);
 
         if (code == null || code.isEmpty()) {
             System.out.println("❌ 인증 코드 없음! 로그인 실패 처리");
-            response.sendRedirect("http://localhost:3000/login"); // 로그인 페이지로 되돌리기
+            response.sendRedirect("http://localhost:3000/login");
             return;
         }
 
@@ -35,9 +44,20 @@ public class KakaoController {
             KakaoUserInfo kakaoUserInfo = kakaoService.getUserInfo(code);
             System.out.println("✅ 유저 정보: " + kakaoUserInfo);
 
-            // TODO: 세션에 저장하거나 JWT 발급 등
+            String kakaoId = kakaoUserInfo.getId();
 
-            response.sendRedirect("http://localhost:3000/nickname");
+            // ✅ 세션에 kakaoId 저장
+            session.setAttribute("kakaoId", kakaoId);
+
+            // ✅ 이미 가입된 회원인지 확인
+            if (memberService.existsByKakaoId(kakaoId)) {
+                System.out.println("✅ 이미 가입된 카카오 사용자입니다. 메인 페이지로 이동합니다.");
+                response.sendRedirect("http://localhost:3000/");  // 이미 가입자면 메인으로
+            } else {
+                System.out.println("🆕 신규 카카오 사용자입니다. 별명 입력 페이지로 이동합니다.");
+                response.sendRedirect("http://localhost:3000/nickname");  // 신규면 닉네임 입력
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect("http://localhost:3000/login");
@@ -49,12 +69,20 @@ public class KakaoController {
 
     // 별명 저장 API
     @PostMapping("/save-nickname")
-    public ResponseEntity<String> saveNickname(@RequestBody Map<String, String> requestBody) {
+    public ResponseEntity<String> saveNickname(@RequestBody Map<String, String> requestBody, HttpSession session) {
         String nickname = requestBody.get("nickname");
+        String kakaoId = (String) session.getAttribute("kakaoId");
 
-        // TODO: 현재 로그인한 사용자 정보와 연결해서 DB에 별명 저장 (임시 예시)
-        System.out.println("저장할 별명: " + nickname);
+        if (kakaoId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+        }
 
-        return ResponseEntity.ok("별명 저장 성공");
+        try {
+            memberService.joinWithKakao(kakaoId, nickname);
+            return ResponseEntity.ok("카카오 회원가입 성공!");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
+
 }
