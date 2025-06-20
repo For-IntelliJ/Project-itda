@@ -1,19 +1,19 @@
 package com.itda.backend.dto;
 
 public class KakaoUserInfo {
+    private Long id;
     private String nickname;
-    private String email;
 
-    public KakaoUserInfo(String nickname, String email) {
+    public KakaoUserInfo(Long id, String nickname) {
+        this.id = id;
         this.nickname = nickname;
-        this.email = email;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getNickname() {
         return nickname;
-    }
-
-    public String getEmail() {
-        return email;
     }
 }
