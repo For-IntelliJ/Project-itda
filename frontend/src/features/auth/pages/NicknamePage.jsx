@@ -19,6 +19,8 @@ const NicknamePage = () => {
                 alert('별명 저장 성공!');
                 window.location.href = '/'; // 메인 페이지로 이동
             } else {
+                const errorText = await response.text();
+                console.log(errorText)
                 alert('별명 저장 실패');
             }
         } catch (error) {
