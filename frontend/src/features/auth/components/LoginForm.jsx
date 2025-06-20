@@ -1,28 +1,34 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-import {Link, useNavigate} from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SocialLoginButtons from "./SocialLoginButtons";
+import { loginUser } from '../api';
+import { useAuth } from "../../../context/AuthContext"; // ✅ 추가
 
 const LoginForm = () => {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({email: '', password: ''});
+    const [formData, setFormData] = useState({ email: '', password: '' });
+    const { setIsLoggedIn } = useAuth(); // ✅ AuthContext에서 로그인 상태 변경 함수 가져옴
 
     const handleChange = (e) => {
-        const {name, value} = e.target;
-        setFormData((prev) => ({...prev, [name]: value}));
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:8080/api/members/login', formData, {
-                withCredentials: true,
+            await loginUser({
+                email: formData.email,
+                password: formData.password,
             });
-            alert('로그인 성공!');
+
+            setIsLoggedIn(true); // ✅ 로그인 상태 업데이트
+            alert("로그인 성공");
             navigate('/');
-        } catch (error) {
-            alert('로그인 실패!');
-            console.error(error);
+        } catch (err) {
+            console.error("❌ 로그인 실패:", err.response?.data || err.message);
+            alert(err.response?.data || "로그인 실패");
         }
     };
 
@@ -40,10 +46,8 @@ const LoginForm = () => {
 
             {/* 로그인 필드 */}
             <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
-                {[
-                    { label: "Email", name: "email", type: "text", placeholder: "example@itda.com" },
-                    { label: "Password", name: "password", type: "password", placeholder: "비밀번호" },
-                ].map(({ label, name, type, placeholder }) => (
+                {[{ label: "Email", name: "email", type: "text", placeholder: "example@itda.com" },
+                    { label: "Password", name: "password", type: "password", placeholder: "비밀번호" }].map(({ label, name, type, placeholder }) => (
                     <div key={name} className="flex flex-col gap-2">
                         <label className="text-base">{label}</label>
                         <input
@@ -67,6 +71,7 @@ const LoginForm = () => {
                 <button type="submit" className="w-full bg-slate-800 text-white py-4 rounded-md text-sm font-semibold">
                     로그인
                 </button>
+
                 {/* 다른 로그인 방법 */}
                 <div className="flex flex-col items-center gap-4 w-full">
                     <div className="flex items-center w-full gap-4">

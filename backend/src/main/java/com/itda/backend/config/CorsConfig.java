@@ -1,26 +1,29 @@
 package com.itda.backend.config;
 
+import com.itda.backend.interceptor.LoginCheckInterceptor;
+import org.apache.tomcat.util.http.Rfc6265CookieProcessor;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
-
+    // 🔹 CORS 설정
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // 모든 요청에 대해
-                .allowedOrigins("http://localhost:3000") // 프론트엔드 주소
-                .allowedOriginPatterns("*") // 개발 환경을 위한 패턴 허용
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // 명시적으로 작성
-                .allowedHeaders("*") // 요청 헤더 허용
-                .allowCredentials(true) // 쿠키(세션) 허용
-                .maxAge(3600); // preflight 결과 캐시 시간 (초)
+        registry.addMapping("/**")  // 모든 경로에 대해
+                .allowedOrigins("http://localhost:3000")  // 프론트 주소만 허용
+                .allowedHeaders("*")
+                .allowCredentials(true)  // 쿠키 (세션) 허용
+                .maxAge(3600);  // preflight 캐시 (1시간)
     }
 
     @Override
@@ -35,17 +38,18 @@ public class CorsConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000"); // 구체적인 프론트엔드 주소
-        configuration.addAllowedOriginPattern("*"); // 개발 환경을 위한 패턴
-        configuration.addAllowedMethod("*");
-        configuration.addAllowedHeader("*");
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> cookieProcessorCustomizer() {
+        return factory -> factory.addContextCustomizers(context -> {
+            Rfc6265CookieProcessor cookieProcessor = new Rfc6265CookieProcessor();
+            cookieProcessor.setSameSiteCookies("None");
+            context.setCookieProcessor(cookieProcessor);
+        });
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new LoginCheckInterceptor())
+                .addPathPatterns("/api/members/me", "/api/members/change-password", "/api/members/logout")
+                .excludePathPatterns("/api/members/login", "/api/members/join");
     }
 }

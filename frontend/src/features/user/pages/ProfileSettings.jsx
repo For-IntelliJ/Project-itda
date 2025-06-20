@@ -59,8 +59,6 @@ function    ProfileSettings() {
                             프로필 수정하기
                         </button>
 
-
-
                     </aside>
 
                     {/* 오른쪽 영역 */}

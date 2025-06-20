@@ -4,45 +4,46 @@ import com.itda.backend.domain.Member;
 import com.itda.backend.dto.MemberJoinRequestDto;
 import com.itda.backend.dto.MemberLoginRequestDto;
 import com.itda.backend.dto.MemberResponseDto;
+import com.itda.backend.dto.PasswordChangeRequestDto;
 import com.itda.backend.service.MemberService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-// REST API 요청을 받아 회원 관련 요청을 처리하는 컨트롤러 클래스
 @RestController
 @RequestMapping("/api/members")
 public class MemberController {
 
     private final MemberService memberService;
 
-    // 생성자를 통해 MemberService 주입
     public MemberController(MemberService memberService) {
         this.memberService = memberService;
     }
 
-    // 회원가입 요청 처리
+    // 회원가입
     @PostMapping("/join")
     public ResponseEntity<MemberResponseDto> join(@RequestBody MemberJoinRequestDto dto) {
-        MemberResponseDto result = memberService.join(dto); // 서비스 호출로 회원가입 처리
-        return ResponseEntity.ok(result); // 가입된 회원 정보 반환
+        MemberResponseDto result = memberService.join(dto);
+        return ResponseEntity.ok(result);
     }
 
-    // 로그인 요청 처리
+    // 로그인
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody MemberLoginRequestDto dto, HttpSession session) {
-        Member member = memberService.login(dto); // 로그인 검증
-
-        if (member == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
+        try {
+            Member member = memberService.login(dto);
+            session.setAttribute("loginUser", member);
+            return ResponseEntity.ok("로그인 성공");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace(); // 로그 남기기
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류");
         }
-
-        session.setAttribute("loginUser", member); // ✅ 전체 Member 객체 저장
-        return ResponseEntity.ok("로그인 성공");
     }
 
-    // 세션 ID와 유지시간 확인용(개발/디버깅용)
+    // 세션 정보 확인 (개발용)
     @GetMapping("/session-info")
     public ResponseEntity<?> getSessionInfo(HttpSession session) {
         String sessionId = session.getId();
@@ -56,22 +57,42 @@ public class MemberController {
         return ResponseEntity.ok("세션 ID: " + sessionId + ", 유지 시간: " + timeout + "초");
     }
 
-    // 현재 로그인한 사용자 정보 조회
+    // 현재 로그인된 유저 정보 조회
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(HttpSession session) {
         Member loginUser = (Member) session.getAttribute("loginUser");
-        
+
         if (loginUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다");
         }
-        
+
         return ResponseEntity.ok(loginUser);
     }
 
-    // 로그아웃 처리
+    // 로그아웃
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpSession session) {
-        session.invalidate();
-        return ResponseEntity.ok("로그아웃 성공");
+        if (session != null) {
+            session.invalidate(); // 세션이 있으면 제거
+        }
+        return ResponseEntity.ok("로그아웃 처리 완료");
+    }
+
+    // 비밀번호 변경
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody PasswordChangeRequestDto dto, HttpSession session) {
+        Member loginUser = (Member) session.getAttribute("loginUser");
+
+        if (loginUser == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        boolean changed = memberService.changePassword(loginUser.getId(), dto.getCurrentPassword(), dto.getNewPassword());
+
+        if (!changed) {
+            return ResponseEntity.badRequest().body("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        return ResponseEntity.ok("비밀번호가 변경되었습니다.");
     }
 }

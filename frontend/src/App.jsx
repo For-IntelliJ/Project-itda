@@ -1,5 +1,7 @@
 import React from "react";
 import {BrowserRouter as Router, Route, Routes, useLocation} from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+
 // 공통 컴포넌트
 import Header from "./features/common/components/Header";
 import Footer from "./features/common/components/Footer";
@@ -24,7 +26,6 @@ import FreeBoardDetailPage from "./features/community/pages/FreeBoardDetailPage"
 function LayoutWrapper() {
     const location = useLocation();
     const noLayoutPaths = ["/login", "/join"]; // ❗ 헤더/푸터를 숨기고 싶은 경로 추가
-
     const shouldHideLayout = noLayoutPaths.includes(location.pathname);
 
     return (
@@ -70,7 +71,9 @@ function LayoutWrapper() {
 function App() {
     return (
         <Router>
-            <LayoutWrapper/>
+            <AuthProvider>
+                <LayoutWrapper />
+            </AuthProvider>
         </Router>
     );
 }

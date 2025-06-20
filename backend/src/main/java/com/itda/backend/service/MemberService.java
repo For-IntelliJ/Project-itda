@@ -47,4 +47,19 @@ public class MemberService {
     public Member login(MemberLoginRequestDto dto) {
         return login(dto.getEmail(), dto.getPassword());
     }
+
+    public boolean changePassword(Long memberId, String currentPw, String newPw) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+
+        // 평문 비교인 경우:
+        if (!member.getPassword().equals(currentPw)) {
+            return false;
+        }
+
+        member.setPassword(newPw); // 비밀번호 변경
+        memberRepository.save(member); // DB에 반영
+
+        return true;
+    }
 }

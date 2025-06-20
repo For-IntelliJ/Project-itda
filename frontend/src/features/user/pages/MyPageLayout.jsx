@@ -1,9 +1,11 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import ChangePassword from "../../auth/pages/ChangePassword";
+import ChangePassword from "./ChangePassword";
 import DeleteAccount from "./DeleteAccount";
 import ProfileSettings from "./ProfileSettings";
 import EditProfile from "./EditProfile";
+import axios from "axios";
+import { checkLogin } from "../../auth/api";
 
 const tabs = [
     { key: "profilesettings", label: "프로필 설정" },
@@ -16,6 +18,22 @@ function MyPageLayout() {
     const [selectedTab, setSelectedTab] = useState("profilesettings");
     const navigate = useNavigate();
 
+    // 로그인 여부 확인
+    useEffect(() => {
+        const verifyLogin = async () => {
+            try {
+                await checkLogin();
+            } catch (err) {
+                if (err.response?.status === 401) {
+                    alert("로그인이 필요합니다.");
+                    navigate("/login");
+                }
+            }
+        };
+        verifyLogin();
+    }, [navigate]);
+
+    // 탭 선택 감지
     useEffect(() => {
         const currentTab = searchParams.get("tab") || "profilesettings";
         setSelectedTab(currentTab);
