@@ -26,3 +26,11 @@ export const checkLogin = async () => {
     });
     return res.data; // 로그인된 사용자 객체 반환 (없으면 401 에러 발생)
 };
+
+//카카오로그인 상태확인
+export const checkKakaoLogin = async () => {
+    const res = await axios.get('http://localhost:8080/auth/kakao/me', {
+        withCredentials: true,
+    });
+    return res.data;  // 닉네임 정보
+};
