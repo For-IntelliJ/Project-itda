@@ -6,38 +6,27 @@ function DeleteAccount() {
         <div className="w-full  py-10 px-4">
             <h1 className="text-2xl font-bold mb-8">😭 회원탈퇴 😭</h1>
 
-            <div className="w-full h-[500px] border-2 border-gray-400 rounded-lg p-8 flex flex-col gap-6 ">
-                <div className="flex flex-col gap-2 mt-2">
-                    <label className="text-3xl font-semibold mb-6">
-                        정말 <span className="text-[#3D4EFE] text-[35px]">"잇다"</span>를 탈퇴하시겠습니까?
-                    </label>
+            <div className="w-full border-2 border-gray-400 rounded-lg p-8 flex flex-col gap-6 ">
+                <div className="mb-6 leading-relaxed">
+                    정말 <span className="text-[#3D4EFE] font-bold text-xl">"잇다"</span>를 탈퇴하시겠습니까? <br />
+                    탈퇴 시 아래 데이터를 포함한 모든 정보가 삭제되며, <strong className="text-red-600">복구가 불가능</strong>합니다.
                 </div>
 
+                <ul className="list-disc pl-5 text-sm space-y-2 text-gray-700">
+                    <li>아이디 및 회원 정보는 즉시 삭제되며 재사용할 수 없습니다.</li>
+                    <li>작성한 글, 댓글, 좋아요 등의 기록은 모두 삭제됩니다.</li>
+                    <li>삭제된 데이터는 복구되지 않으므로 꼭 필요한 내용은 백업해 주세요.</li>
+                </ul>
 
-                <div className="flex flex-col gap-2">
-                    <label className="text-lg font-semibold">id재사용 및 복구 불가</label>
-                </div>
+                <p className="text-sm text-gray-600 mt-4">
+                    탈퇴 후 서비스를 다시 이용하시려면 새 계정을 만들어야 합니다.
+                </p>
 
-                <div className="mb-6">
-                    사용하고 계신 아이디를 탈퇴하시면 본인과 타인 모두 재사용 및 복구가 불가하오니 신중하게 선택하시길 바랍니다.
-                </div>
-
-                <div className="flex flex-col gap-2">
-                    <label className="text-lg font-semibold">회원정보/개인형 서비스 이용기록 삭제</label>
-                </div>
-                <div>
-                    회원정보 및 메일, 블로그, 주소록 등 개인형 서비스 이용기록은 모두 삭제되면, 삭제된 데이터는 복구되지 않습니다.
-                </div>
-                <div className="mb-6">
-                    삭제되는 내용을 확인하시고 필요한 데이터는 미리 백업해주세요.
-                </div>
                 <div className="flex justify-end ">
                     <button className="bg-[#FF3D3D] hover:bg-[#B22222] text-white font-semibold py-2 px-4 rounded-lg w-[100px]">
                         탈퇴하기
                     </button>
                 </div>
-
-
             </div>
         </div>
     );
