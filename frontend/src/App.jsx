@@ -5,6 +5,7 @@ import Header from "./features/common/components/Header";
 import Footer from "./features/common/components/Footer";
 // 페이지 컴포넌트
 import JoinPage from "./features/auth/pages/JoinPage";
+import NicknamePage from "./features/auth/pages/NicknamePage";
 import LoginPage from "./features/auth/pages/LoginPage";
 import MainPage from "./features/main/pages/MainPage";
 import FAQPage from "./features/faq/pages/FAQPage";
@@ -53,6 +54,9 @@ function LayoutWrapper() {
 
                     {/* 클래스 상세 페이지 */}
                     <Route path="/class/:id" element={<ClassDetailPage />} />
+
+                    {/* 카카오 로그인 새로운 닉네임입력 페이지*/}
+                    <Route path="/nickname" element={<NicknamePage />} />
 
                 </Routes>
             </main>
