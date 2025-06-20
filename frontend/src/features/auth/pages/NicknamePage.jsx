@@ -28,26 +28,34 @@ const NicknamePage = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-20 p-4 border rounded">
-            <h1 className="text-xl font-bold mb-4">새로운 별명을 입력해주세요</h1>
+        <div className="max-w-md mx-auto h-auto mt-32 p-6 border border-gray-200 rounded-xl shadow-md bg-white">
+            <h1 className="text-2xl font-bold text-center text-gray-800 mb-10">
+                ✏️ 새로운 별명을 입력해주세요 ✏️
+            </h1>
             <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
-                    placeholder="별명 입력"
-                    className="w-full p-2 border rounded mb-4"
-                    required
-                />
+                <div className="mb-6">
+                    <label className="block text-gray-700 font-medium mb-2">
+                        나의 별명
+                    </label>
+                    <input
+                        type="text"
+                        value={nickname}
+                        onChange={(e) => setNickname(e.target.value)}
+                        placeholder="ex) 오늘부터갓생러, 수악중독, 코딩천재"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3D4EFE] transition"
+                        required
+                    />
+                </div>
                 <button
                     type="submit"
-                    className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 rounded"
+                    className="w-full bg-[#3D4EFE] hover:bg-[#5C6BF5] text-white font-semibold py-2 rounded-lg transition"
                 >
-                    저장
+                    저장하기
                 </button>
             </form>
         </div>
     );
+
 };
 
 export default NicknamePage;
