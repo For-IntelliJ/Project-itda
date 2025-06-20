@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { checkLogin } from "../features/auth/api"; // 로그인 확인 API
+import { checkLogin, checkKakaoLogin } from "../features/auth/api"; // ✅ 카카오 로그인 확인도 import
 
 const AuthContext = createContext();
 
@@ -9,10 +9,18 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const verify = async () => {
             try {
+                // 일반 로그인 확인
                 await checkLogin();
                 setIsLoggedIn(true);
-            } catch (e) {
-                setIsLoggedIn(false);
+            } catch (e1) {
+                try {
+                    // 일반 로그인 실패하면 카카오 로그인 확인
+                    await checkKakaoLogin();
+                    setIsLoggedIn(true);
+                } catch (e2) {
+                    // 둘 다 실패
+                    setIsLoggedIn(false);
+                }
             }
         };
         verify();
