@@ -31,13 +31,13 @@ public class KakaoService {
 
         Map<String, Object> body = response.getBody();
         if (body != null) {
+            Long id = ((Number) body.get("id")).longValue();  // ✅ 카카오 ID 가져오기
             Map<String, Object> kakaoAccount = (Map<String, Object>) body.get("kakao_account");
             Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
 
             String nickname = (String) profile.get("nickname");
-            String email = (String) kakaoAccount.get("email");
 
-            return new KakaoUserInfo(nickname, email);
+            return new KakaoUserInfo(id, nickname);  // ✅ id 추가
         } else {
             throw new RuntimeException("카카오 사용자 정보 조회 실패");
         }
