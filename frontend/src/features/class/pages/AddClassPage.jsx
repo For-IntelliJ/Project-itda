@@ -451,7 +451,7 @@ const AddClassPage = () => {
                                             key={num}
                                             className={`w-10 h-10 rounded-full flex items-center justify-center font-medium ${
                                                 num <= currentStep + 1 
-                                                    ? 'bg-teal-500 text-white' 
+                                                    ? 'bg-hover opacity-80 text-white' 
                                                     : 'bg-gray-200 text-gray-400'
                                             }`}
                                         >
@@ -483,7 +483,7 @@ const AddClassPage = () => {
                                     <button
                                         type="button"
                                         onClick={handleNext}
-                                        className="bg-teal-500 hover:bg-teal-600 text-white py-3 px-6 rounded-lg font-medium"
+                                        className="bg-hover hover:bg-hoverDark text-white py-3 px-6 rounded-lg font-medium"
                                     >
                                         다음
                                     </button>

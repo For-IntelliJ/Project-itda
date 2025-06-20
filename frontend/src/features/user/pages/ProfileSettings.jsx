@@ -8,7 +8,7 @@ const TABS = {
     COMMUNITY: 'community',
 };
 
-function ProfileSettings() {
+function    ProfileSettings() {
     const [activeTab, setActiveTab] = useState(TABS.STATISTICS);
     //네비게이션함수(프로필수정 -> EditPage뜨게) 반드시 함수 안에서 호출되어야 하는구나...
     const navigate = useNavigate();
@@ -74,17 +74,17 @@ function ProfileSettings() {
                         {/* 탭 내용 */}
                         {activeTab === TABS.STATISTICS ? (
                             <div className="flex gap-4">
-                                <div className="w-[500px] h-[388px] border-2 border-gray-400 rounded-lg p-4">
+                                <div className="w-[260px] h-[388px] border-2 border-gray-400 rounded-lg p-4">
                                     <h3 className="text-lg font-semibold text-gray-700">출석</h3>
                                     <p className="text-sm text-gray-600 mt-2">여기에 원하는 내용을 넣을 수 있어요.</p>
                                 </div>
-                                <div className="w-[400px] h-[388px] border-2 border-gray-400 rounded-lg p-4">
+                                <div className="w-[260px] h-[388px] border-2 border-gray-400 rounded-lg p-4">
                                     <h3 className="text-lg font-semibold text-gray-700">누적 출석 현황</h3>
                                     <p className="text-sm text-gray-600 mt-2">또 다른 내용도 이곳에 넣을 수 있어요.</p>
                                 </div>
                             </div>
                         ) : (
-                            <div className="w-[700px] h-[388px] border-2 border-gray-400 rounded-lg p-4">
+                            <div className="w-[540px] h-[388px] border-2 border-gray-400 rounded-lg p-4">
                                 <h3 className="text-lg font-semibold text-gray-700">커뮤니티 활동 내역</h3>
                                 <p className="text-sm text-gray-600 mt-2">게시글, 댓글, 좋아요 등을 보여줄 수 있어요.</p>
                             </div>

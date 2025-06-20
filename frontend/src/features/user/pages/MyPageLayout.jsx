@@ -44,7 +44,7 @@ function MyPageLayout() {
             </div>
 
             {/* 우측 콘텐츠 영역 */}
-            <div className="flex-1 pl-6 min-w-[600px]">
+            <div className="flex-1 pl-6 ">
                 {selectedTab === "profilesettings" && <ProfileSettings />}
                 {selectedTab === "changepassword" && <ChangePassword />}
                 {selectedTab === "deleteaccount" && <DeleteAccount />}
