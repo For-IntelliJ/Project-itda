@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import com.itda.backend.domain.Member;
+import com.itda.backend.repository.MemberRepository;
+
 
 import java.util.Map;
 
@@ -13,10 +16,15 @@ import java.util.Map;
 public class KakaoService {
 
     private final RestTemplate restTemplate = new RestTemplate();
+    private final MemberRepository memberRepository;
+
 
     private final String REST_API_KEY = "a680d77f4256f7e8110b6bfb85250623";
     private final String REDIRECT_URI = "http://localhost:8080/auth/kakao/callback";
 
+    public KakaoService(MemberRepository memberRepository) { //생성자 생성
+        this.memberRepository = memberRepository;
+    }
     public KakaoUserInfo getUserInfo(String code) {
         String accessToken = getAccessToken(code);
 
@@ -68,4 +76,5 @@ public class KakaoService {
             throw new RuntimeException("카카오 액세스 토큰 발급 실패");
         }
     }
+
 }

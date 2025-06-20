@@ -1,17 +1,32 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { checkLogin, logoutUser } from "../../auth/api"; // 경로는 프로젝트 구조에 맞게 조정
+import { checkLogin, logoutUser } from "../../auth/api";
 import { useAuth } from "../../../context/AuthContext";
 
 function Header() {
   const navigate = useNavigate();
   const { isLoggedIn, setIsLoggedIn } = useAuth();
+  const [nickname, setNickname] = useState("");  // ✅ 닉네임 상태 추가
 
-  // 로그인 상태 확인
+  //로그인 후 main처리
   useEffect(() => {
-    // 최초 로딩 시 로그인 여부 확인은 AuthContext에서 이미 처리됨
-  }, []);
+    if (isLoggedIn) {
+      console.log("로그인 상태 - 닉네임 요청 시도");
+      axios.get("/auth/kakao/me", { withCredentials: true })
+          .then(res => {
+            console.log("닉네임 받아옴:", res.data);
+            setNickname(res.data);
+          })
+          .catch(err => {
+            console.error("닉네임 가져오기 실패:", err);
+          });
+    } else {
+      console.log("비로그인 상태 - 닉네임 요청 안함");
+      setNickname("");
+    }
+  }, [isLoggedIn]);
+
 
   // 로그아웃 처리
   const handleLogout = async () => {
@@ -61,7 +76,7 @@ function Header() {
 
               {/* 우측 메뉴 */}
               <nav>
-                <ul className="flex space-x-6">
+                <ul className="flex space-x-6 items-center">
                   <li>
                     <a href="#more" className="font-pretendard hover:text-hover hover:font-bold">더보기</a>
                   </li>
@@ -71,11 +86,18 @@ function Header() {
                     </button>
                   </li>
                   {isLoggedIn ? (
-                      <li>
-                        <button onClick={handleLogout} className="font-pretendard hover:text-hover hover:font-bold">
-                          로그아웃
-                        </button>
-                      </li>
+                      <>
+                        <li>
+                          <button onClick={handleLogout} className="font-pretendard hover:text-hover hover:font-bold">
+                            로그아웃
+                          </button>
+                        </li>
+                        {nickname && (
+                            <li className="text-sm text-gray-600 font-pretendard">
+                              👋 환영합니다, <span className="font-semibold">{nickname}</span>님!
+                            </li>
+                        )}
+                      </>
                   ) : (
                       <li>
                         <Link to="/login" className="font-pretendard hover:text-hover hover:font-bold">

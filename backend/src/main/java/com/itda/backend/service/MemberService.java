@@ -96,5 +96,10 @@ public class MemberService {
         return memberRepository.existsByKakaoId(kakaoId);
     }
 
+    //카카오 id찾아오기 우리 DB에 저장된거
+    public Member findByKakaoId(String kakaoId) {
+        return memberRepository.findByKakaoId(kakaoId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 카카오 ID의 사용자를 찾을 수 없습니다."));
+    }
 
 }

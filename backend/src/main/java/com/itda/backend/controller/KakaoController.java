@@ -12,6 +12,8 @@ import com.itda.backend.service.MemberService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.itda.backend.domain.Member;
+
 
 
 
@@ -48,6 +50,9 @@ public class KakaoController {
 
             // ✅ 세션에 kakaoId 저장
             session.setAttribute("kakaoId", kakaoId);
+            
+            //저장직후 로그찍기
+            System.out.println("✔ 세션에 저장된 kakaoId: " + session.getAttribute("kakaoId"));
 
             // ✅ 이미 가입된 회원인지 확인
             if (memberService.existsByKakaoId(kakaoId)) {
@@ -61,10 +66,10 @@ public class KakaoController {
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect("http://localhost:3000/login");
+           
+
         }
     }
-
-
 
 
     // 별명 저장 API
@@ -84,5 +89,21 @@ public class KakaoController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    //내정보조회
+    @GetMapping("/me")
+    public ResponseEntity<String> getMyInfo(HttpSession session) {
+        String kakaoId = (String) session.getAttribute("kakaoId");
+        System.out.println("🔍 세션에서 가져온 kakaoId = " + kakaoId);
+        System.out.println("📥 /me에서 꺼낸 kakaoId: " + kakaoId);
+        if (kakaoId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보 없음");
+        }
+
+        Member member = memberService.findByKakaoId(kakaoId);
+        return ResponseEntity.ok(member.getNickname()); // ✅ 문자열 그대로
+    }
+
+
 
 }
