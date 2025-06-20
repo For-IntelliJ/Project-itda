@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import {Link, useSearchParams} from "react-router-dom";
 import axios from "axios";
 import FreeBoardCard from "../components/FreeBoardCard";
 
@@ -36,10 +36,14 @@ function FreeBoardPage() {
             setSearchParams({ tab, page });
         }
     };
-
     return (
-        <div className="w-full max-w-3xl mx-auto min-h-screen py-10 px-4">
-        <h2 className="text-xl font-bold mb-6">자유게시판</h2>
+        <div className="w-full max-w-4xl mx-auto py-10 px-4">
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold">자유게시판</h1>
+                <Link to="/community/freeboard/write">
+                    <button className="bg-[#3D4EFE] text-white px-4 py-2 rounded-md font-semibold hover:bg-[#2c3ed9]">글쓰기</button>
+                </Link>
+            </div>
 
             <div className="space-y-4">
                 {paginatedData.map((post) => (

@@ -18,15 +18,6 @@ function CommunityLayout() {
         setSelectedTab(currentTab);
     }, [searchParams]);
 
-    // ✅ 탭에 따라 이동 경로 결정
-    const handleWriteClick = () => {
-        if (selectedTab === "questions") {
-            navigate("/community/ask/write");       // ✅ 질문 쓰기 경로
-        } else if (selectedTab === "free") {
-            navigate("/community/freeboard/write"); // ✅ 자유 글쓰기 경로
-        }
-    };
-
     return (
         <div className="flex max-w-6xl mx-auto mt-10 px-4">
             {/* 좌측 탭 메뉴 */}
@@ -51,16 +42,6 @@ function CommunityLayout() {
 
             {/* 우측 콘텐츠 영역 */}
             <div className="flex-1 pl-6">
-                {/* ✅ 글쓰기 버튼 */}
-                <div className="flex justify-end mb-4">
-                    <button
-                        onClick={handleWriteClick}
-                        className="bg-[#3D4EFE] text-white px-4 py-2 rounded-md font-semibold hover:bg-[#2c3ed9]"
-                    >
-                        글쓰기
-                    </button>
-                </div>
-
                 {/* 콘텐츠 영역 */}
                 {selectedTab === "questions" && <CommunityQuestionPage />}
                 {selectedTab === "free" && <FreeBoardPage />}
