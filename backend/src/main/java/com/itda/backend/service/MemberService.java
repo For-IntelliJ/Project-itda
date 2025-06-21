@@ -66,6 +66,7 @@ public class MemberService {
     }
 
     //별명과 카카오 id를 받아서 회원저장
+    /*// 기존: MemberResponseDto 반환
     public MemberResponseDto joinWithKakao(String kakaoId, String nickname) {
         if (memberRepository.existsByKakaoId(kakaoId)) {
             throw new IllegalArgumentException("이미 가입된 카카오 계정입니다.");
@@ -90,6 +91,32 @@ public class MemberService {
         Member saved = memberRepository.save(member);
         return MemberMapper.toDto(saved);
     }
+*/
+    //별명과 카카오 id를 받아서 회원저장 (Member 반환해서 세션저장용 -> 그래야 로그인 가능)
+    public Member joinWithKakaoReturnMember(String kakaoId, String nickname) {
+        if (memberRepository.existsByKakaoId(kakaoId)) {
+            throw new IllegalArgumentException("이미 가입된 카카오 계정입니다.");
+        }
+
+        if (memberRepository.existsByNickname(nickname)) {
+            throw new IllegalArgumentException("이미 사용 중인 별명입니다.");
+        }
+
+        Member member = Member.builder()
+                .kakaoId(kakaoId)
+                .nickname(nickname)
+                .loginType(LoginType.KAKAO)
+                .role(Role.MENTEE)
+                .email("kakao_" + kakaoId + "@kakao.com")
+                .username(nickname)
+                .phone("000-0000-0000")
+                .build();
+
+        log.debug("🟡 카카오 회원가입 요청 (Member 반환): kakaoId={}, nickname={}", kakaoId, nickname);
+
+        return memberRepository.save(member);
+    }
+
 
     //카카로 회원가입 유무 확인
     public boolean existsByKakaoId(String kakaoId) {

@@ -7,32 +7,40 @@ import { useAuth } from "../../../context/AuthContext";
 function Header() {
   const navigate = useNavigate();
   const { isLoggedIn, setIsLoggedIn } = useAuth();
-  const [nickname, setNickname] = useState("");  // ✅ 닉네임 상태 추가
+  const [nickname, setNickname] = useState("");  // 닉네임 상태 추가
 
-  //로그인 후 main처리
+  // 1) 앱 최초 마운트 시 서버 세션 확인해서 로그인 상태 세팅
+  useEffect(() => {
+    axios.get("http://localhost:8080/auth/kakao/me", { withCredentials: true })
+        .then(res => {
+          setNickname(res.data);
+          setIsLoggedIn(true);
+          console.log("✅ 서버 세션 확인: 로그인 상태 유지");
+        })
+        .catch(err => {
+          setIsLoggedIn(false);
+          setNickname("");
+          console.log("❌ 서버 세션 없음: 비로그인 상태");
+        });
+  }, [setIsLoggedIn]);
+
+  // 2) 로그인 상태가 바뀔 때마다 닉네임 새로 요청 (중복 요청 줄이려면 이건 필요에 따라 조절)
   useEffect(() => {
     if (isLoggedIn) {
-      console.log("로그인 상태 - 닉네임 요청 시도");
-      axios.get("/auth/kakao/me", { withCredentials: true })
-          .then(res => {
-            console.log("닉네임 받아옴:", res.data);
-            setNickname(res.data);
-          })
-          .catch(err => {
-            console.error("닉네임 가져오기 실패:", err);
-          });
+      axios.get("http://localhost:8080/auth/kakao/me", { withCredentials: true })
+          .then(res => setNickname(res.data))
+          .catch(() => setNickname(""));
     } else {
-      console.log("비로그인 상태 - 닉네임 요청 안함");
       setNickname("");
     }
   }, [isLoggedIn]);
 
-
   // 로그아웃 처리
   const handleLogout = async () => {
     try {
-      await logoutUser();
+      await axios.post("http://localhost:8080/api/members/logout", null, { withCredentials: true });
       setIsLoggedIn(false);
+      setNickname("");
       alert("로그아웃 되었습니다.");
       navigate("/");
     } catch (err) {
@@ -40,6 +48,8 @@ function Header() {
       alert("로그아웃 중 오류 발생");
     }
   };
+
+
 
   // 클래스 등록 버튼 클릭 핸들러
   const handleAddClassClick = async (e) => {
@@ -93,7 +103,7 @@ function Header() {
                           </button>
                         </li>
                         {nickname && (
-                            <li className="text-sm text-gray-600 font-pretendard">
+                            <li className="text-lg text-gray-600 font-pretendard">
                               👋 환영합니다, <span className="font-semibold">{nickname}</span>님!
                             </li>
                         )}

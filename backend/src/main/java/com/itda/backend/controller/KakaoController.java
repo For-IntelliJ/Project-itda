@@ -17,8 +17,6 @@ import com.itda.backend.domain.Member;
 
 
 
-// 이하 코드...
-
 @RestController
 @RequestMapping("/auth/kakao")
 public class KakaoController {
@@ -50,12 +48,14 @@ public class KakaoController {
 
             // ✅ 세션에 kakaoId 저장
             session.setAttribute("kakaoId", kakaoId);
-            
+
             //저장직후 로그찍기
             System.out.println("✔ 세션에 저장된 kakaoId: " + session.getAttribute("kakaoId"));
 
             // ✅ 이미 가입된 회원인지 확인
             if (memberService.existsByKakaoId(kakaoId)) {
+                Member member = memberService.findByKakaoId(kakaoId);
+                session.setAttribute("loginUser", member); // 로그인 세션 저장
                 System.out.println("✅ 이미 가입된 카카오 사용자입니다. 메인 페이지로 이동합니다.");
                 response.sendRedirect("http://localhost:3000/");  // 이미 가입자면 메인으로
             } else {
@@ -66,13 +66,13 @@ public class KakaoController {
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect("http://localhost:3000/login");
-           
+
 
         }
     }
 
 
-    // 별명 저장 API
+    //별명저장 API + 세션에 로그인 상태 집어넣기
     @PostMapping("/save-nickname")
     public ResponseEntity<String> saveNickname(@RequestBody Map<String, String> requestBody, HttpSession session) {
         String nickname = requestBody.get("nickname");
@@ -83,14 +83,20 @@ public class KakaoController {
         }
 
         try {
-            memberService.joinWithKakao(kakaoId, nickname);
+            // 회원가입 후 Member 객체 반환하는 서비스 메서드 호출 (아래 메서드가 Member 반환해야 합니다)
+            Member newMember = memberService.joinWithKakaoReturnMember(kakaoId, nickname);
+
+            // 세션에 로그인 정보 저장
+            session.setAttribute("loginUser", newMember);
+
             return ResponseEntity.ok("카카오 회원가입 성공!");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    //내정보조회
+
+    //내kakaoid 조회
     @GetMapping("/me")
     public ResponseEntity<String> getMyInfo(HttpSession session) {
         String kakaoId = (String) session.getAttribute("kakaoId");
@@ -103,6 +109,7 @@ public class KakaoController {
         Member member = memberService.findByKakaoId(kakaoId);
         return ResponseEntity.ok(member.getNickname()); // ✅ 문자열 그대로
     }
+
 
 
 
