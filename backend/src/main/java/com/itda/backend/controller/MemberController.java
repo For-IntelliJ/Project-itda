@@ -62,6 +62,9 @@ public class MemberController {
     // 현재 로그인된 유저 정보 조회
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(HttpSession session) {
+        System.out.println("🧪 /me 요청 → 세션 ID: " + session.getId());
+        System.out.println("🧪 /me 요청 → 세션 유저: " + session.getAttribute("loginUser"));
+
         Member loginUser = (Member) session.getAttribute("loginUser");
 
         if (loginUser == null) {
