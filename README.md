@@ -216,4 +216,3 @@ yarn start
 | `mentee_id`  | BIGINT                                | 신청한 멘티 ID  | FK → `member(id)` (role = 'mentee') 조건 필요       |
 | `status`     | ENUM('PENDING','APPROVED','REJECTED') | 신청 상태      | DEFAULT 'PENDING'                               |
 | `applied_at` | TIMESTAMP                             | 신청 일시      | DEFAULT CURRENT\_TIMESTAMP (또는 @PrePersist로 설정) |
-
