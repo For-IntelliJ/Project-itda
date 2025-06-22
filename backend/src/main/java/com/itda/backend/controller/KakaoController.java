@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Map;
+import java.util.HashMap;
 
 import com.itda.backend.dto.KakaoUserInfo;
 import com.itda.backend.service.KakaoService;
@@ -57,6 +58,7 @@ public class KakaoController {
                 Member member = memberService.findByKakaoId(kakaoId);
                 session.setAttribute("loginUser", member); // 로그인 세션 저장
                 System.out.println("✅ 이미 가입된 카카오 사용자입니다. 메인 페이지로 이동합니다.");
+                System.out.println("✅ 로그인 세션 저장: " + member.getNickname() + ", " + member.getRole());
                 response.sendRedirect("http://localhost:3000/");  // 이미 가입자면 메인으로
             } else {
                 System.out.println("🆕 신규 카카오 사용자입니다. 별명 입력 페이지로 이동합니다.");
@@ -88,6 +90,7 @@ public class KakaoController {
 
             // 세션에 로그인 정보 저장
             session.setAttribute("loginUser", newMember);
+            System.out.println("✅ 새 회원가입 후 로그인 세션 저장: " + newMember.getNickname() + ", " + newMember.getRole());
 
             return ResponseEntity.ok("카카오 회원가입 성공!");
         } catch (IllegalArgumentException e) {
@@ -98,16 +101,43 @@ public class KakaoController {
 
     //내kakaoid 조회
     @GetMapping("/me")
-    public ResponseEntity<String> getMyInfo(HttpSession session) {
+    public ResponseEntity<?> getMyInfo(HttpSession session) {
         String kakaoId = (String) session.getAttribute("kakaoId");
+        Member loginUser = (Member) session.getAttribute("loginUser");
+        
         System.out.println("🔍 세션에서 가져온 kakaoId = " + kakaoId);
-        System.out.println("📥 /me에서 꺼낸 kakaoId: " + kakaoId);
-        if (kakaoId == null) {
+        System.out.println("🔍 세션에서 가져온 loginUser = " + loginUser);
+        
+        Member member = null;
+        
+        // 먼저 loginUser 세션이 있는지 확인
+        if (loginUser != null) {
+            System.out.println("✅ loginUser 세션이 있음");
+            member = loginUser;
+        } else if (kakaoId != null) {
+            // loginUser 세션이 없으면 kakaoId로 조회
+            member = memberService.findByKakaoId(kakaoId);
+            System.out.println("✅ kakaoId로 Member 조회 성공");
+            // 조회한 Member를 세션에 저장
+            session.setAttribute("loginUser", member);
+        } else {
+            System.out.println("❌ 모든 세션 없음");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보 없음");
         }
-
-        Member member = memberService.findByKakaoId(kakaoId);
-        return ResponseEntity.ok(member.getNickname()); // ✅ 문자열 그대로
+        
+        // 순환 참조 방지를 위해 단순한 Map 반환
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", member.getId());
+        response.put("nickname", member.getNickname());
+        response.put("username", member.getUsername());
+        response.put("email", member.getEmail());
+        response.put("role", member.getRole().toString());
+        response.put("loginType", member.getLoginType().toString());
+        response.put("createdAt", member.getCreatedAt());
+        
+        System.out.println("✅ 반환할 데이터: nickname=" + member.getNickname() + ", role=" + member.getRole());
+        
+        return ResponseEntity.ok(response);
     }
 
 

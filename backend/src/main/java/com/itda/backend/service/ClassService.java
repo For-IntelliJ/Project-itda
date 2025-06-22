@@ -62,7 +62,7 @@ public class ClassService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다."));
         Region region = regionRepository.findById(dto.getRegionId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지역입니다."));
-        Member mentor = memberRepository.findById(1L) // ⚠️ 추후 세션 사용자로 교체
+        Member mentor = memberRepository.findById(dto.getMentorId() != null ? dto.getMentorId() : 1L)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멘토입니다."));
 
         ClassEntity classEntity = ClassMapper.toEntity(dto, mentor, category, region);

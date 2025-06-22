@@ -7,50 +7,61 @@ import { useAuth } from "../../../context/AuthContext";
 function Header() {
   const navigate = useNavigate();
   const { isLoggedIn, setIsLoggedIn, user, setUser, logout } = useAuth();
-  const [nickname, setNickname] = useState("");  // 닉네임 상태 추가
+  const [nickname, setNickname] = useState("");
+  const [isServerConnected, setIsServerConnected] = useState(false);
 
-  // 1) 앱 최초 마운트 시 서버 세션 확인해서 로그인 상태 세팅
+  // 서버 연결 상태 확인
   useEffect(() => {
+    const checkServerConnection = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/health", { 
+          withCredentials: true,
+          timeout: 5000
+        });
+        setIsServerConnected(true);
+      } catch (error) {
+        console.warn('⚠️ 백엔드 서버에 연결할 수 없습니다.');
+        console.warn('확인사항: 1) MySQL 서버 실행 2) 백엔드 서버 실행 (localhost:8080)');
+        setIsServerConnected(false);
+      }
+    };
+
+    checkServerConnection();
+  }, []);
+
+  // 로그인 상태 확인 (서버 연결된 경우에만)
+  useEffect(() => {
+    if (!isServerConnected) {
+      console.log('⚠️ 서버 미연결 상태: 로그인 체크 건너뜀');
+      return;
+    }
+
     const checkLoginStatus = async () => {
       console.log('🔍 로그인 상태 확인 시작...');
       try {
-        // 먼저 일반 로그인 체크
         const response = await axios.get("http://localhost:8080/api/members/me", { withCredentials: true });
         console.log('✅ 일반 로그인 세션 확인:', response.data);
-        console.log('🔍 일반 사용자 권한:', response.data.role, typeof response.data.role);
         
         setIsLoggedIn(true);
         setUser(response.data);
         setNickname(response.data.nickname || response.data.username);
         
-        console.log('✅ 일반 로그인 처리 완료 - user:', response.data);
-        console.log('✅ 일반 로그인 처리 완료 - nickname:', response.data.nickname || response.data.username);
       } catch (err1) {
         console.log('❌ 일반 로그인 실패, 카카오 로그인 시도...');
         try {
-          // 일반 로그인 실패하면 카카오 로그인 체크
           const kakaoResponse = await axios.get("http://localhost:8080/auth/kakao/me", { withCredentials: true });
-          console.log('✅ 카카오 로그인 세션 확인 - 원본 데이터:', kakaoResponse.data);
-          console.log('✅ 카카오 로그인 세션 확인 - 데이터 타입:', typeof kakaoResponse.data);
           
-          // 데이터가 문자열인지 객체인지 확인
           if (typeof kakaoResponse.data === 'string') {
-            console.log('❌ 카카오 API가 문자열을 반환함 (닉네임만): ', kakaoResponse.data);
-            // 문자열인 경우 별도로 Member 정보를 가져와야 함
             const sessionResponse = await axios.get("http://localhost:8080/api/members/me", { withCredentials: true });
-            console.log('✅ 세션에서 Member 정보 가져온:', sessionResponse.data);
-            
             setIsLoggedIn(true);
             setUser(sessionResponse.data);
-            setNickname(kakaoResponse.data); // 닉네임은 카카오 API에서
+            setNickname(kakaoResponse.data);
           } else {
-            console.log('✅ 카카오 API가 객체를 반환함:', kakaoResponse.data);
             setIsLoggedIn(true);
             setUser(kakaoResponse.data);
             setNickname(kakaoResponse.data.nickname || kakaoResponse.data.username);
           }
           
-          console.log('✅ 카카오 로그인 처리 완료');
         } catch (err2) {
           console.log('❌ 모든 세션 없음: 비로그인 상태');
           setIsLoggedIn(false);
@@ -61,27 +72,28 @@ function Header() {
     };
     
     checkLoginStatus();
-  }, [setIsLoggedIn, setUser]);
+  }, [setIsLoggedIn, setUser, isServerConnected]);
 
-  // 2) 로그인 상태가 바뀔 때마다 닉네임 새로 요청 (중복 요청 줄이려면 이건 필요에 따라 조절)
+  // 닉네임 업데이트
   useEffect(() => {
-    console.log('🔍 useEffect - isLoggedIn:', isLoggedIn, 'user:', user);
     if (isLoggedIn && user) {
-      // 모든 사용자는 user 객체에서 닉네임 가져옴
       const newNickname = user.nickname || user.username;
-      console.log('🔍 새로운 닉네임 설정:', newNickname);
       setNickname(newNickname);
     } else {
-      console.log('🔍 닉네임 초기화');
       setNickname("");
     }
   }, [isLoggedIn, user]);
 
   // 로그아웃 처리
   const handleLogout = async () => {
+    if (!isServerConnected) {
+      alert("서버에 연결되지 않았습니다. 백엔드 서버를 실행해주세요.");
+      return;
+    }
+
     try {
       await axios.post("http://localhost:8080/api/members/logout", null, { withCredentials: true });
-      logout(); // AuthContext의 logout 사용
+      logout();
       setNickname("");
       alert("로그아웃 되었습니다.");
       navigate("/");
@@ -91,37 +103,38 @@ function Header() {
     }
   };
 
-
-
   // 클래스 등록 버튼 클릭 핸들러
   const handleAddClassClick = (e) => {
     e.preventDefault();
     
-    console.log('🔍 클래스 등록 버튼 클릭');
-    console.log('🔍 현재 로그인 상태:', isLoggedIn);
-    console.log('🔍 현재 user 객체:', user);
-    console.log('🔍 현재 nickname:', nickname);
+    if (!isServerConnected) {
+      alert("서버에 연결되지 않았습니다. 백엔드 서버(localhost:8080)를 먼저 실행해주세요.");
+      return;
+    }
     
-    // 로그인 체크
     if (!user) {
       alert("로그인이 필요합니다.");
       navigate("/login");
       return;
     }
     
-    // MENTOR 권한 체크 - 문자열로 비교
-    console.log("🔍 클래스 등록 버튼 클릭 - 사용자 권한:", user.role, typeof user.role);
     if (user.role !== "MENTOR") {
       alert("해당 기능은 멘토만 이용하실 수 있습니다. 멘토 신청을 통해 역할을 변경하세요!");
       return;
     }
     
-    // MENTOR인 경우 클래스 등록 페이지로 이동
     navigate("/addclass");
   };
 
   return (
       <div className="flex flex-col pt-4 mb-1">
+        {/* 서버 연결 상태 알림 */}
+        {!isServerConnected && (
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 text-center text-sm">
+            ⚠️ 백엔드 서버에 연결되지 않았습니다. localhost:8080에서 백엔드를 실행해주세요.
+          </div>
+        )}
+        
         <header className="text-black p-4 shadow-md">
           <div className="mx-auto max-w-[1100px] space-y-4">
 
@@ -145,7 +158,7 @@ function Header() {
                       클래스등록
                     </button>
                   </li>
-                  {isLoggedIn ? (
+                  {isLoggedIn && isServerConnected ? (
                       <>
                         <li>
                           <button onClick={handleLogout} className="font-pretendard hover:text-hover hover:font-bold">
@@ -157,8 +170,6 @@ function Header() {
                               👋 환영합니다, <span className="font-semibold">{nickname}</span>님!
                             </li>
                         )}
-                        {/* 디버깅용 로그 */}
-                        {console.log('🔍 환영 메시지 렌더링 - nickname:', nickname, 'isLoggedIn:', isLoggedIn)}
                       </>
                   ) : (
                       <li>

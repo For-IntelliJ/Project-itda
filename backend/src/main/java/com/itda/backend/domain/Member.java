@@ -53,7 +53,8 @@ public class Member {
     private LocalDateTime createdAt;
 
     // MentorProfile과의 관계 추가
-    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("user") // 순환 참조 방지
     private MentorProfile mentorProfile;
 
     @PrePersist

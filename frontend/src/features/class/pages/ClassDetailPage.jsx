@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import GoogleCalendarService from '../../../services/GoogleCalendarService';
 import { useAuth } from '../../../context/AuthContext';
+import WorkingKakaoMap from '../../../components/WorkingKakaoMap';
 
 const ClassDetailPage = () => {
     const { id } = useParams();
@@ -32,34 +33,7 @@ const ClassDetailPage = () => {
         const fetchClassDetail = async () => {
             try {
                 const response = await axios.get(`http://localhost:8080/api/classes/${id}`);
-                console.log('>> [FRONTEND DEBUG] API 응답 수신');
-                console.log('응답 상태:', response.status);
-                console.log('응답 데이터:', response.data);
-                console.log('사용 가능한 필드들:', Object.keys(response.data));
-                
-                // 주요 필드들 개별 확인
-                console.log('=== 주요 데이터 확인 ===');
-                console.log('제목:', response.data.title);
-                console.log('멘토 정보:', {
-                    mentor: response.data.mentor,
-                    mentorName: response.data.mentorName,
-                    mentorUsername: response.data.mentorUsername
-                });
-                console.log('카테고리 정보:', {
-                    category: response.data.category,
-                    categoryName: response.data.categoryName
-                });
-                console.log('지역 정보:', {
-                    region: response.data.region,
-                    regionName: response.data.regionName
-                });
-                console.log('텍스트 필드들:', {
-                    curriculum: response.data.curriculum ? `있음 (${response.data.curriculum.length}글자)` : '없음',
-                    detailContent: response.data.detailContent ? `있음 (${response.data.detailContent.length}글자)` : '없음',
-                    mentoInfo: response.data.mentoInfo ? `있음 (${response.data.mentoInfo.length}글자)` : '없음',
-                    spaceInfo: response.data.spaceInfo ? `있음 (${response.data.spaceInfo.length}글자)` : '없음'
-                });
-                console.log('========================');
+
                 
                 let enrichedData = { ...response.data };
                 
@@ -77,14 +51,12 @@ const ClassDetailPage = () => {
                     try {
                         // 정확한 API 엔드포인트 사용
                         const regionResponse = await axios.get(`http://localhost:8080/api/regions/${response.data.region.id}`);
-                        console.log('>> [DEBUG] 지역 데이터:', regionResponse.data);
                         enrichedData.regionInfo = {
                             name: response.data.region?.name || '지역명 없음',
                             description: response.data.spaceInfo,
                             fullData: regionResponse.data
                         };
                     } catch (regionError) {
-                        console.warn('지역 정보 조회 실패, 기본 정보 사용:', regionError);
                         // 지역 정보 조회 실패 시 기본 정보 사용
                         enrichedData.regionInfo = {
                             name: response.data.region?.name || '지역명 없음',
@@ -99,17 +71,11 @@ const ClassDetailPage = () => {
                     };
                 }
                 
-                console.log('>> [DEBUG] 최종 데이터:', {
-                    mentorProfile: enrichedData.mentorProfile,
-                    regionInfo: enrichedData.regionInfo,
-                    mentoInfo: response.data.mentoInfo,
-                    spaceInfo: response.data.spaceInfo
-                });
+
                 
                 setClassData(enrichedData);
                 setLoading(false);
             } catch (error) {
-                console.error('클래스 상세 정보 로드 실패:', error);
                 setLoading(false);
             }
         };
@@ -242,11 +208,7 @@ const ClassDetailPage = () => {
         }
         
         try {
-            console.log('>> [APPLY] 클래스 신청 요청:', {
-                classId: id,
-                selectedDate: selectedDate,
-                menteeId: user.id
-            });
+
             
             const response = await axios.post('http://localhost:8080/api/applies', {
                 classId: parseInt(id),
@@ -256,7 +218,7 @@ const ClassDetailPage = () => {
                 withCredentials: true // 세션 쿠키 포함
             });
             
-            console.log('>> [APPLY] 신청 응답:', response.data);
+
             
             if (response.data.success) {
                 // 신청 성공 후 구글 캘린더 추가 옵션 표시
@@ -268,7 +230,6 @@ const ClassDetailPage = () => {
                 alert(`❌ 신청 실패: ${response.data.message}`);
             }
         } catch (error) {
-            console.error('클래스 신청 실패:', error);
             
             if (error.response?.status === 401) {
                 alert('로그인이 필요합니다.');
@@ -288,9 +249,7 @@ const ClassDetailPage = () => {
         try {
             await GoogleCalendarService.init();
             setCalendarInitialized(true);
-            console.log('구글 캘린더 API 초기화 완료');
         } catch (error) {
-            console.error('구글 캘린더 초기화 실패:', error);
         }
     };
 
@@ -312,7 +271,6 @@ const ClassDetailPage = () => {
             alert('✅ 구글 캘린더에 일정이 추가되었습니다!\n\n\ud83d\udcc5 "잇다" 캘린더에서 확인하실 수 있습니다.');
             
         } catch (error) {
-            console.error('구글 캘린더 추가 실패:', error);
             alert('❌ 구글 캘린더 추가에 실패했습니다.\n\n다시 시도해주세요.');
         } finally {
             handleCalendarDialogClose();
@@ -686,12 +644,12 @@ const ClassDetailPage = () => {
                                     </div>
                                 </div>
                                 
-                                {/* 지도 영역 - 추후 카카오맵 추가 예정 */}
-                                <div className="w-full h-80 bg-gray-100 rounded-lg flex items-center justify-center">
-                                    <div className="text-center text-gray-500">
-                                        <p className="text-lg mb-2">🗺️</p>
-                                        <p>지도 기능 개발 예정</p>
-                                    </div>
+                                {/* 카카오맵 */}
+                                <div className="w-full">
+                                    <WorkingKakaoMap 
+                                        locationText={classData.regionInfo?.description || classData.spaceInfo || classData.regionInfo?.name || classData.region?.name || classData.regionName}
+                                        className="w-full h-80"
+                                    />
                                 </div>
                             </section>
                         </div>
