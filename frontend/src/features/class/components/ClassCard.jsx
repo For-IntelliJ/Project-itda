@@ -36,12 +36,10 @@ const ClassCard = ({
     const handleImageLoad = () => {
         setImageLoading(false);
         setImageError(false);
-        console.log(">> [DEBUG] ClassCard 이미지 로드 성공:", image);
     };
 
     // 이미지 로드 실패 처리
     const handleImageError = (e) => {
-        console.log(`>> [ERROR] ClassCard 이미지 로드 실패: ${image}`);
         setImageLoading(false);
         setImageError(true);
         

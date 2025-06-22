@@ -109,7 +109,7 @@ public class MemberService {
                 .role(Role.MENTEE)
                 .email("kakao_" + kakaoId + "@kakao.com")
                 .username(nickname)
-                .phone("000-0000-0000")
+                .phone("000-0000-0000")  // 임시 번호
                 .build();
 
         log.debug("🟡 카카오 회원가입 요청 (Member 반환): kakaoId={}, nickname={}", kakaoId, nickname);
@@ -127,6 +127,12 @@ public class MemberService {
     public Member findByKakaoId(String kakaoId) {
         return memberRepository.findByKakaoId(kakaoId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 카카오 ID의 사용자를 찾을 수 없습니다."));
+    }
+    
+    // ID로 회원 찾기
+    public Member findById(Long id) {
+        return memberRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 사용자를 찾을 수 없습니다."));
     }
 
 }

@@ -16,6 +16,7 @@ public class ClassCreateRequestDto {
     private String detailContent;  // 상세 설명
     private String mentoInfo;      // 멘토 소개 정보
     private String spaceInfo;      // 공간/위치 정보
+    private Long mentorId;         // 멘토 ID 추가
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -37,4 +38,6 @@ public class ClassCreateRequestDto {
     public void setMentoInfo(String mentoInfo) { this.mentoInfo = mentoInfo; }
     public String getSpaceInfo() { return spaceInfo; }
     public void setSpaceInfo(String spaceInfo) { this.spaceInfo = spaceInfo; }
+    public Long getMentorId() { return mentorId; }
+    public void setMentorId(Long mentorId) { this.mentorId = mentorId; }
 }
