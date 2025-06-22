@@ -14,6 +14,8 @@ function FreeBoardWritePage() {
                 type: "FREE",
                 title: data.title,
                 content: data.content,
+            }, {
+                withCredentials: true
             });
 
             alert("글이 등록되었습니다!");

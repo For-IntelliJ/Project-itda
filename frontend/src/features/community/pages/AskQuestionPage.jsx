@@ -15,6 +15,8 @@ function AskQuestionPage() {
                 type: "QUESTION",
                 title: data.title,
                 content: data.content,
+            }, {
+                withCredentials: true
             });
 
             alert("질문이 등록되었습니다!");
