@@ -1,14 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { useAuth } from '../../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const AddClassPage = () => {
+    const { user, loading } = useAuth();
+    const navigate = useNavigate();
+    
     // --- Step state ---
     const [currentStep, setCurrentStep] = useState(0); // 0~5까지의 단계
     
     // --- Data state ---
     const [categories, setCategories] = useState([]);
     const [regions, setRegions] = useState([]);
-    const [mentorInfo, setMentorInfo] = useState({ name: '테스트 멘토', intro: '테스트용 멘토 소개입니다.' });
+    const [mentorInfo, setMentorInfo] = useState({ 
+        name: user?.nickname || user?.username || '멘토 이름', 
+        intro: '' 
+    });
 
     // --- Form fields ---
     const [formData, setFormData] = useState({
@@ -19,7 +27,9 @@ const AddClassPage = () => {
         detailContent: '',
         curriculumDifficulty: '',
         curriculum: '',
-        spaceRegionId: ''
+        spaceRegionId: '',
+        mentorIntro: '', // 멘토 소개 추가
+        spaceInfo: ''    // 공간 상세 정보 추가
     });
 
     // --- Step completion tracking ---
@@ -30,11 +40,31 @@ const AddClassPage = () => {
         3: false, // 이미지
         4: false, // 상세 내용
         5: false, // 커리큘럼
-        6: false  // 호스트 소개 & 지역
+        6: false, // 호스트 소개
+        7: false  // 지역 정보
     });
 
     // --- Default image URL ---
     const DEFAULT_IMAGE_URL = 'https://via.placeholder.com/300x200?text=기본+이미지';
+
+    // --- 권한 체크 ---
+    useEffect(() => {
+        if (!loading) {
+            // 로그인되지 않은 경우
+            if (!user) {
+                alert('로그인이 필요합니다.');
+                navigate('/login');
+                return;
+            }
+            
+            // MENTOR 권한이 아닌 경우
+            if (user.role !== 'MENTOR') {
+                alert('해당 기능은 멘토만 이용하실 수 있습니다. 멘토 신청을 통해 역할을 변경하세요!');
+                navigate('/');
+                return;
+            }
+        }
+    }, [user, loading, navigate]);
 
     // --- Fetch initial data ---
     useEffect(() => {
@@ -76,7 +106,8 @@ const AddClassPage = () => {
             3: !!formData.mainImage,
             4: !!formData.detailContent,
             5: !!formData.curriculum && !!formData.curriculumDifficulty,
-            6: !!formData.spaceRegionId
+            6: !!formData.mentorIntro,
+            7: !!formData.spaceRegionId && !!formData.spaceInfo
         }));
     }, [formData]);
 
@@ -88,12 +119,31 @@ const AddClassPage = () => {
 
     const handleFileChange = (e, fieldName) => {
         const file = e.target.files[0];
+        
+        if (file) {
+            // 파일 크기 검증 (10MB 제한)
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            if (file.size > maxSize) {
+                alert('파일 크기가 너무 큽니다. 10MB 이하의 파일을 선택해주세요.');
+                e.target.value = ''; // 입력 초기화
+                return;
+            }
+            
+            // 파일 형식 검증
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('지원되지 않는 파일 형식입니다. JPG, PNG, GIF, WebP 파일만 업로드 가능합니다.');
+                e.target.value = ''; // 입력 초기화
+                return;
+            }
+        }
+        
         setFormData(prev => ({ ...prev, [fieldName]: file }));
     };
 
     const handleNext = (e) => {
         e.preventDefault(); // form submit 방지
-        if (currentStep < 6) {
+        if (currentStep < 7) {
             setCurrentStep(currentStep + 1);
         }
     };
@@ -114,7 +164,8 @@ const AddClassPage = () => {
         
         // 최종 제출 시에만 모든 필수 필드 검증
         if (!formData.title || !formData.categoryId || !formData.onlineOffline || 
-            !formData.curriculum || !formData.curriculumDifficulty || !formData.spaceRegionId) {
+            !formData.curriculum || !formData.curriculumDifficulty || !formData.spaceRegionId ||
+            !formData.mentorIntro || !formData.spaceInfo) {
             alert('모든 필수 항목을 입력해주세요.');
             return;
         }
@@ -128,7 +179,9 @@ const AddClassPage = () => {
             detailContent: formData.detailContent,
             regionId: +formData.spaceRegionId,
             mainImage: formData.mainImage ? null : DEFAULT_IMAGE_URL,
-            mentorId: 1
+            mentorId: user?.id || 1,
+            mentoInfo: formData.mentorIntro, // 멘토 소개 추가
+            spaceInfo: formData.spaceInfo    // 공간 상세 정보 추가
         };
 
         try {
@@ -148,7 +201,30 @@ const AddClassPage = () => {
             window.location.href = '/';
         } catch (err) {
             console.error('에러:', err);
-            alert(`클래스 생성 실패: ${err.response?.data || err.message}`);
+            
+            // 구체적인 에러 메시지 처리
+            let errorMessage = '클래스 생성 실패';
+            
+            if (err.response) {
+                // 서버 응답이 있는 경우
+                const status = err.response.status;
+                const data = err.response.data;
+                
+                if (status === 413) {
+                    errorMessage = '파일 크기가 너무 큽니다. 더 작은 이미지를 선택해주세요.';
+                } else if (status === 400) {
+                    errorMessage = data?.message || '입력 데이터에 오류가 있습니다.';
+                } else if (status === 403) {
+                    errorMessage = '권한이 없습니다. 멘토 계정으로 로그인해주세요.';
+                } else {
+                    errorMessage = data?.message || `서버 오류가 발생했습니다. (상태 코드: ${status})`;
+                }
+            } else if (err.request) {
+                // 네트워크 오류
+                errorMessage = '네트워크 연결에 실패했습니다. 인터넷 연결을 확인해주세요.';
+            }
+            
+            alert(errorMessage);
         }
     };
 
@@ -224,27 +300,26 @@ const AddClassPage = () => {
                     <div className="bg-white p-8 rounded-lg">
                         <h2 className="text-xl font-bold mb-6 text-center">STEP.2 클래스 소개</h2>
                         <div className="text-center">
-                            <div className="flex justify-center space-x-4 mb-6">
+                            <div className="flex justify-center mb-6">
                                 <label className={`inline-block py-3 px-6 rounded-lg cursor-pointer font-medium ${
                                     formData.mainImage 
                                         ? 'bg-orange-500 text-white hover:bg-orange-600' 
                                         : 'bg-orange-500 text-white hover:bg-orange-600'
                                 }`}>
-                                    자유롭게 작성
+                                    이미지 등록
                                     <input type="file" accept="image/*" onChange={e => handleFileChange(e, 'mainImage')} className="hidden" />
                                 </label>
-                                <button
-                                    type="button"
-                                    className="bg-gray-200 text-gray-600 py-3 px-6 rounded-lg font-medium cursor-not-allowed"
-                                    disabled
-                                >
-                                    단계별로 작성
-                                </button>
                             </div>
                             {formData.mainImage && (
-                                <p className="text-sm text-gray-600 mt-4">선택된 파일: {formData.mainImage.name}</p>
+                                <div className="mt-4">
+                                    <p className="text-sm text-gray-600">선택된 파일: {formData.mainImage.name}</p>
+                                    <p className="text-xs text-gray-500">크기: {(formData.mainImage.size / 1024 / 1024).toFixed(2)}MB</p>
+                                </div>
                             )}
-                            <p className="text-sm text-gray-500 mt-4">* 메인 이미지를 업로드해 주세요</p>
+                            <div className="text-sm text-gray-500 mt-4">
+                                <p>* 메인 이미지를 업로드해 주세요</p>
+                                <p>* 최대 10MB, JPG/PNG/GIF/WebP 형식 지원</p>
+                            </div>
                         </div>
                     </div>
                 );
@@ -317,42 +392,89 @@ const AddClassPage = () => {
                     </div>
                 );
 
-            case 6: // 호스트 소개 & 공간 정보
+            case 6: // 호스트 소개
                 return (
                     <div className="bg-white p-8 rounded-lg">
                         <h2 className="text-xl font-bold mb-6 text-center">STEP.2 클래스 소개</h2>
                         <div className="space-y-6">
                             {/* 멘토 정보 */}
                             <div className="bg-gray-50 p-4 rounded-lg">
-                                <h3 className="text-lg font-semibold mb-3">호스트 정보</h3>
+                                <h3 className="text-lg font-semibold mb-3">호스트 소개</h3>
                                 <div className="space-y-3">
-                                    <input
-                                        type="text"
-                                        value={mentorInfo.name}
-                                        disabled
-                                        className="w-full p-3 border border-gray-300 rounded bg-gray-100 text-gray-500"
-                                    />
-                                    <textarea
-                                        value={mentorInfo.intro}
-                                        disabled
-                                        rows={3}
-                                        className="w-full p-3 border border-gray-300 rounded bg-gray-100 text-gray-500 resize-none"
-                                    />
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">멘토 이름</label>
+                                        <input
+                                            type="text"
+                                            value={user?.nickname || user?.username || '멘토 이름'}
+                                            disabled
+                                            className="w-full p-3 border border-gray-300 rounded bg-gray-100 text-gray-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            멘토 소개 <span className="text-red-500">(필수)</span>
+                                        </label>
+                                        <textarea
+                                            name="mentorIntro"
+                                            value={formData.mentorIntro}
+                                            onChange={handleChange}
+                                            rows={4}
+                                            placeholder="자신을 소개하는 글을 작성해주세요. (경력, 전문분야, 수업 스타일 등)"
+                                            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                        />
+                                        <div className="text-right text-sm text-gray-500 mt-1">
+                                            ({formData.mentorIntro.length}/500)
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                );
 
-                            {/* 지역 선택 */}
+            case 7: // 지역 정보
+                return (
+                    <div className="bg-white p-8 rounded-lg">
+                        <h2 className="text-xl font-bold mb-6 text-center">STEP.2 클래스 소개</h2>
+                        <div className="space-y-6">
+                            {/* 지역 정보 */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">지역 선택</label>
-                                <select
-                                    name="spaceRegionId"
-                                    value={formData.spaceRegionId}
-                                    onChange={handleChange}
-                                    className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option value="">지역을 선택하세요</option>
-                                    {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                                </select>
+                                <h3 className="text-lg font-semibold mb-4">지역 정보</h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            지역을 선택하세요 <span className="text-red-500">(필수)</span>
+                                        </label>
+                                        <select
+                                            name="spaceRegionId"
+                                            value={formData.spaceRegionId}
+                                            onChange={handleChange}
+                                            className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            <option value="">지역을 선택하세요</option>
+                                            {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            지역에 대한 상세 정보 <span className="text-red-500">(필수)</span>
+                                        </label>
+                                        <textarea
+                                            name="spaceInfo"
+                                            value={formData.spaceInfo}
+                                            onChange={handleChange}
+                                            rows={4}
+                                            placeholder="예: 강남역 2번 출구에서 도보 5분, 지하철 2호선 강남역 직접 연결, 대형 바이크 락 마련, 전용 주차장 완비"
+                                            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                        />
+                                        <div className="text-right text-sm text-gray-500 mt-1">
+                                            ({formData.spaceInfo.length}/300)
+                                        </div>
+                                        <p className="text-sm text-gray-400 mt-2">
+                                            * 찾아오는 방법, 주차 정보, 대중교통 정보 등을 상세히 작성해주세요.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -362,6 +484,22 @@ const AddClassPage = () => {
                 return null;
         }
     };
+
+    // 로딩 중이거나 권한이 없으면 리렌더링하지 않음
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+                    <p className="mt-4 text-gray-600">로딩 중...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!user || user.role !== 'MENTOR') {
+        return null; // 권한 체크에서 리다이렉트 되므로 null 리턴
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -413,7 +551,8 @@ const AddClassPage = () => {
                                         { id: 3, title: '이미지', completed: completedSteps[3] },
                                         { id: 4, title: '상세 내용', completed: completedSteps[4] },
                                         { id: 5, title: '커리큘럼', completed: completedSteps[5] },
-                                        { id: 6, title: '호스트 소개', completed: completedSteps[6] }
+                                        { id: 6, title: '호스트 소개', completed: completedSteps[6] },
+                                        { id: 7, title: '지역 정보', completed: completedSteps[7] }
                                     ].map(step => (
                                         <div
                                             key={step.id}
@@ -446,18 +585,18 @@ const AddClassPage = () => {
                             {/* 상단 진행률 */}
                             <div className="bg-white p-4 rounded-lg mb-6">
                                 <div className="flex justify-center space-x-8 mb-4">
-                                    {[1, 2, 3, 4, 5, 6, 7].map(num => (
-                                        <div
-                                            key={num}
-                                            className={`w-10 h-10 rounded-full flex items-center justify-center font-medium ${
-                                                num <= currentStep + 1 
-                                                    ? 'bg-hover opacity-80 text-white' 
-                                                    : 'bg-gray-200 text-gray-400'
-                                            }`}
-                                        >
-                                            {num}
-                                        </div>
-                                    ))}
+                                {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                                <div
+                                key={num}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center font-medium ${
+                                num <= currentStep + 1 
+                                ? 'bg-hover opacity-80 text-white' 
+                                : 'bg-gray-200 text-gray-400'
+                                }`}
+                                >
+                                {num}
+                                </div>
+                                ))}
                                 </div>
                             </div>
 
@@ -479,7 +618,7 @@ const AddClassPage = () => {
                                     이전
                                 </button>
                                 
-                                {currentStep < 6 ? (
+                                {currentStep < 7 ? (
                                     <button
                                         type="button"
                                         onClick={handleNext}

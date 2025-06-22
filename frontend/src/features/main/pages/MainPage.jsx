@@ -96,10 +96,21 @@ const Main = () => {
         async function fetchAllData() {
             try {
                 console.log(">> [DEBUG] 클래스 데이터 요청 시작");
+                console.log(">> [DEBUG] 요청 URL: http://localhost:8080/api/classes");
+                
+                // 네트워크 연결 테스트
+                try {
+                    const testRes = await fetch("http://localhost:8080/api/classes/test");
+                    console.log(">> [DEBUG] 테스트 API 응답:", testRes.status);
+                } catch (testErr) {
+                    console.error(">> [DEBUG] 테스트 API 실패:", testErr);
+                }
                 
                 const classRes = await fetch("http://localhost:8080/api/classes");
+                console.log(">> [DEBUG] API 응답 상태:", classRes.status, classRes.statusText);
+                
                 if (!classRes.ok) {
-                    throw new Error(`클래스 목록 불러오기 실패 (status ${classRes.status})`);
+                    throw new Error(`클래스 목록 불러오기 실패 (status ${classRes.status}): ${classRes.statusText}`);
                 }
                 const classData = await classRes.json();
                 console.log(">> [DEBUG] 받은 클래스 데이터:", classData);

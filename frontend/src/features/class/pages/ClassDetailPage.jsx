@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import GoogleCalendarService from '../../../services/GoogleCalendarService';
+import { useAuth } from '../../../context/AuthContext';
 
 const ClassDetailPage = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
+    const { user, loading: authLoading } = useAuth();
     const [classData, setClassData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('클래스 소개');
@@ -218,8 +221,21 @@ const ClassDetailPage = () => {
         setShowDatePicker(!showDatePicker);
     };
 
-    // 클래스 신청
+    // 클래스 신청 - MENTEE 권한 체크
     const handleApply = async () => {
+        // 로그인 체크
+        if (!user) {
+            alert('로그인이 필요합니다.');
+            navigate('/login');
+            return;
+        }
+        
+        // MENTEE 권한 체크
+        if (user.role !== 'MENTEE') {
+            alert('클래스 수강은 멘티만 이용이 가능합니다.');
+            return;
+        }
+        
         if (!selectedDate) {
             alert('날짜를 선택해주세요.');
             return;
@@ -229,13 +245,15 @@ const ClassDetailPage = () => {
             console.log('>> [APPLY] 클래스 신청 요청:', {
                 classId: id,
                 selectedDate: selectedDate,
-                menteeId: 10 // 임시 멘티 ID
+                menteeId: user.id
             });
             
             const response = await axios.post('http://localhost:8080/api/applies', {
                 classId: parseInt(id),
                 selectedDate: selectedDate,
-                menteeId: 10 // 임시로 ID 10 사용
+                menteeId: user.id
+            }, {
+                withCredentials: true // 세션 쿠키 포함
             });
             
             console.log('>> [APPLY] 신청 응답:', response.data);
@@ -252,7 +270,12 @@ const ClassDetailPage = () => {
         } catch (error) {
             console.error('클래스 신청 실패:', error);
             
-            if (error.response?.data?.message) {
+            if (error.response?.status === 401) {
+                alert('로그인이 필요합니다.');
+                navigate('/login');
+            } else if (error.response?.status === 403) {
+                alert('클래스 수강은 멘티만 이용이 가능합니다.');
+            } else if (error.response?.data?.message) {
                 alert(`❌ 신청 실패: ${error.response.data.message}`);
             } else {
                 alert('❌ 클래스 신청 중 오류가 발생했습니다.');
@@ -465,12 +488,34 @@ const ClassDetailPage = () => {
                                     <span>{isWishlisted ? '위시리스트에서 제거' : '위시리스트'}</span>
                                 </button>
                                 
-                                <button
-                                    onClick={handleApply}
-                                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold transition-colors"
-                                >
-                                    클래스 신청하기
-                                </button>
+                                {/* 역할에 따른 조건부 렌더링 */}
+                                {!authLoading && (
+                                    <>
+                                        {!user ? (
+                                            <button
+                                                onClick={() => navigate('/login')}
+                                                className="w-full bg-gray-500 hover:bg-gray-600 text-white py-3 px-4 rounded-lg font-semibold transition-colors"
+                                            >
+                                                로그인 후 신청하기
+                                            </button>
+                                        ) : user.role === 'MENTEE' ? (
+                                            <button
+                                                onClick={handleApply}
+                                                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold transition-colors"
+                                            >
+                                                클래스 신청하기
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => alert('클래스 수강은 멘티만 이용이 가능합니다.')}
+                                                className="w-full bg-gray-400 text-gray-600 py-3 px-4 rounded-lg font-semibold cursor-not-allowed"
+                                                disabled
+                                            >
+                                                멘티만 신청 가능
+                                            </button>
+                                        )}
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -617,7 +662,9 @@ const ClassDetailPage = () => {
                             {/* 위치 */}
                             <section ref={locationRef} className="bg-white p-8 rounded-lg shadow-sm border">
                                 <h2 className="text-2xl font-bold text-gray-800 mb-6">위치</h2>
-                                <div className="bg-gray-100 p-4 rounded-lg">
+                                
+                                {/* 위치 정보 */}
+                                <div className="bg-gray-100 p-4 rounded-lg mb-6">
                                     <p className="font-semibold text-gray-800 mb-2">
                                         📍 {classData.regionInfo?.name || 
                                              classData.region?.name || 
@@ -636,6 +683,14 @@ const ClassDetailPage = () => {
                                         ) : (
                                             <p className="text-gray-500 italic">상세 위치 정보가 준비 중입니다.</p>
                                         )}
+                                    </div>
+                                </div>
+                                
+                                {/* 지도 영역 - 추후 카카오맵 추가 예정 */}
+                                <div className="w-full h-80 bg-gray-100 rounded-lg flex items-center justify-center">
+                                    <div className="text-center text-gray-500">
+                                        <p className="text-lg mb-2">🗺️</p>
+                                        <p>지도 기능 개발 예정</p>
                                     </div>
                                 </div>
                             </section>

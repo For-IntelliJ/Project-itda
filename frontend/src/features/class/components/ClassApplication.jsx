@@ -1,6 +1,29 @@
 import React from "react";
+import { useAuth } from "../../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function ClassApplication({ classData, selectedDate, onClose, onConfirm }) {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    
+    const handleConfirm = () => {
+        // 로그인 체크
+        if (!user) {
+            alert('로그인이 필요합니다.');
+            navigate('/login');
+            return;
+        }
+        
+        // MENTEE 권한 체크
+        if (user.role !== 'MENTEE') {
+            alert('클래스 수강은 멘티만 이용이 가능합니다.');
+            return;
+        }
+        
+        // 권한이 있으면 신청 실행
+        onConfirm();
+        onClose();
+    };
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg">
@@ -45,10 +68,7 @@ function ClassApplication({ classData, selectedDate, onClose, onConfirm }) {
                     <button
                         type="button"
                         className="px-6 py-2 bg-[#3D4EFE] text-white rounded-md hover:bg-[#2c3ed9] font-medium"
-                        onClick={() => {
-                            onConfirm();
-                            onClose();
-                        }}
+                        onClick={handleConfirm}
                     >
                         신청
                     </button>
