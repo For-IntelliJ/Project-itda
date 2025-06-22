@@ -1,10 +1,15 @@
 package com.itda.backend.controller;
 
 import com.itda.backend.domain.ClassEntity;
+import com.itda.backend.domain.Member;
+import com.itda.backend.domain.enums.Role;
 import com.itda.backend.dto.ClassCreateRequestDto;
 import com.itda.backend.dto.ClassResponseDto;
 import com.itda.backend.service.ClassService;
+import com.itda.backend.service.MemberService;
+import com.itda.backend.service.S3Service;
 import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,48 +34,12 @@ public class ClassController {
 
     private final ClassService classService;
     private final String uploadDir = "uploads/";
+    private final MemberService memberService;
+    private final S3Service s3Service; // S3Service 추가
 
     @PostConstruct
     public void init() {
         System.out.println(">> [INFO] ClassController 초기화 완료");
-    }
-
-    /**
-     * 일반 클래스 생성 (텍스트 데이터만)
-     */
-    @PostMapping
-    public ResponseEntity<?> createClass(@RequestBody ClassCreateRequestDto dto) {
-        try {
-            classService.save(dto);
-            return ResponseEntity.ok("클래스 생성 완료!");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("클래스 생성 실패: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 클래스 생성 + 이미지 업로드 (멀티파트)
-     */
-    @PostMapping(value = "/with-files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> createClassWithFiles(
-            @RequestPart("classData") ClassCreateRequestDto dto,
-            @RequestPart(value = "mainImage", required = false) MultipartFile mainImage,
-            @RequestPart(value = "detailImage", required = false) MultipartFile detailImage) {
-
-        try {
-            // 이미지 저장
-            if (mainImage != null && !mainImage.isEmpty()) {
-                String mainImagePath = saveFile(mainImage);
-                dto.setMainImage(mainImagePath);
-            }
-
-            classService.save(dto);
-            return ResponseEntity.ok("클래스 및 이미지 업로드 완료!");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("클래스 생성 실패: " + e.getMessage());
-        }
     }
 
     /**
@@ -79,6 +48,152 @@ public class ClassController {
     @GetMapping("/test")
     public ResponseEntity<String> test() {
         return ResponseEntity.ok("ClassController 정상 작동 중!");
+    }
+
+    /**
+     * 일반 클래스 생성 (텍스트 데이터만) - MENTOR 권한 필요
+     */
+    @PostMapping
+    public ResponseEntity<?> createClass(@RequestBody ClassCreateRequestDto dto, HttpSession session) {
+        try {
+            // 로그인 체크
+            Member loginUser = (Member) session.getAttribute("loginUser");
+            if (loginUser == null) {
+                return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "message", "로그인이 필요합니다."
+                ));
+            }
+            
+            // 멘토 권한 체크
+            Member member = memberService.findById(loginUser.getId());
+            if (member.getRole() != Role.MENTOR) {
+                return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "message", "해당 기능은 멘토만 이용하실 수 있습니다. 멘토 신청을 통해 역할을 변경하세요!"
+                ));
+            }
+            
+            // 멘토 ID 설정
+            dto.setMentorId(loginUser.getId());
+            
+            classService.save(dto);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "클래스 생성 완료!"
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", "클래스 생성 실패: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * 클래스 생성 + 이미지 업로드 (멀티파트) - MENTOR 권한 필요
+     */
+    @PostMapping(value = "/with-files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createClassWithFiles(
+            @RequestPart("classData") ClassCreateRequestDto dto,
+            @RequestPart(value = "mainImage", required = false) MultipartFile mainImage,
+            @RequestPart(value = "detailImage", required = false) MultipartFile detailImage,
+            HttpSession session) {
+
+        try {
+            // 로그인 체크
+            Member loginUser = (Member) session.getAttribute("loginUser");
+            if (loginUser == null) {
+                return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "message", "로그인이 필요합니다."
+                ));
+            }
+            
+            // 멘토 권한 체크
+            Member member = memberService.findById(loginUser.getId());
+            if (member.getRole() != Role.MENTOR) {
+                return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "message", "해당 기능은 멘토만 이용하실 수 있습니다. 멘토 신청을 통해 역할을 변경하세요!"
+                ));
+            }
+            
+            // 멘토 ID 설정
+            dto.setMentorId(loginUser.getId());
+            
+            // 이미지 S3에 업로드
+            if (mainImage != null && !mainImage.isEmpty()) {
+                String s3ImageUrl = s3Service.uploadClassImage(mainImage);
+                dto.setMainImage(s3ImageUrl); // S3 URL로 설정
+            }
+
+            classService.save(dto);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "클래스 및 이미지 업로드 완료!"
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", "클래스 생성 실패: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * 클래스 이미지 업로드 전용 엔드포인트 (프로필 이미지 업로드와 동일한 방식)
+     */
+    @PostMapping("/upload-image")
+    public ResponseEntity<?> uploadClassImage(
+            @RequestParam("image") MultipartFile image,
+            HttpSession session) {
+        
+        try {
+            // 로그인 체크
+            Member loginUser = (Member) session.getAttribute("loginUser");
+            if (loginUser == null) {
+                return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "message", "로그인이 필요합니다."
+                ));
+            }
+            
+            // 멘토 권한 체크
+            Member member = memberService.findById(loginUser.getId());
+            if (member.getRole() != Role.MENTOR) {
+                return ResponseEntity.status(403).body(Map.of(
+                    "success", false,
+                    "message", "클래스 이미지 업로드는 멘토만 이용하실 수 있습니다."
+                ));
+            }
+            
+            // 이미지 파일 검증
+            if (image == null || image.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "이미지 파일을 선택해주세요."
+                ));
+            }
+            
+            // S3에 클래스 이미지 업로드
+            String imageUrl = s3Service.uploadClassImage(image);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "클래스 이미지 업로드 완료!",
+                "imageUrl", imageUrl
+            ));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "message", "이미지 업로드 중 오류가 발생했습니다: " + e.getMessage()
+            ));
+        }
     }
 
     /**
@@ -347,8 +462,10 @@ public class ClassController {
     }
 
     /**
-     * 파일 저장 메서드
+     * 파일 저장 메서드 - 로컬 저장 (레거시)
+     * 이제 S3Service.uploadClassImage()를 사용합니다.
      */
+    @Deprecated
     private String saveFile(MultipartFile file) throws IOException {
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {

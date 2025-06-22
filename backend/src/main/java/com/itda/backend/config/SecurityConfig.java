@@ -20,8 +20,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ CORS 설정 연결
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().permitAll()  // 모든 요청 허용 (테스트용)
                 )
                 .logout(logout -> logout.disable())
                 .sessionManagement(session -> session.maximumSessions(1));
@@ -29,11 +28,14 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ✅ CorsFilter는 제거하고 이 설정만 사용
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedOrigins(List.of(
+            "http://localhost:3000",
+            "http://56.155.32.85:3000",  // EC2 IP에서 접근 허용
+            "http://56.155.32.85:8080"   // EC2 8080 포트도 허용
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
