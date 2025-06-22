@@ -60,14 +60,7 @@ const ClassDetail = () => {
                 }
                 const data = await res.json();
                 
-                // 디버깅: 받은 데이터 전체 출력
-                console.log('=== 백엔드에서 받은 원본 데이터 ===');
-                console.log(JSON.stringify(data, null, 2));
-                console.log('사용 가능한 필드들:', Object.keys(data));
-                console.log('mentoInfo:', data.mentoInfo);
-                console.log('spaceInfo:', data.spaceInfo);
-                console.log('mentor 객체:', data.mentor);
-                console.log('region 객체:', data.region);
+
                 
                 const enriched = {
                     ...data,
@@ -76,9 +69,7 @@ const ClassDetail = () => {
                     detailImages: data.detail_images ? [data.detail_images] : [],
                 };
                 
-                console.log('=== 가공된 데이터 ===');
-                console.log('enriched.mentoInfo:', enriched.mentoInfo);
-                console.log('enriched.spaceInfo:', enriched.spaceInfo);
+
                 
                 setClassData(enriched);
                 setLoading(false);
@@ -112,14 +103,9 @@ const ClassDetail = () => {
                 category: classData?.category_name
             };
 
-            // 콘솔 로그로 데이터 확인
-            console.log('=== 프론트엔드 신청 데이터 ===');
-            console.log('신청 데이터:', applyData);
-            console.log('Class ID:', id);
-            console.log('선택된 날짜:', selectedDate);
 
-            // API 호출 전 로그
-            console.log('서버로 전송할 데이터:', { classId: id });
+
+
 
             // API 호출
             const response = await fetch('http://localhost:8080/api/applies', {
@@ -132,41 +118,25 @@ const ClassDetail = () => {
                 })
             });
 
-            console.log('HTTP Response Status:', response.status);
-            console.log('HTTP Response OK:', response.ok);
-
             // 응답 텍스트 확인
             const responseText = await response.text();
-            console.log('서버 응답 텍스트:', responseText);
 
             let result;
             try {
                 result = JSON.parse(responseText);
             } catch (parseError) {
-                console.error('JSON 파싱 오류:', parseError);
-                console.error('응답 내용:', responseText);
                 alert('서버 응답 형식 오류');
                 return;
             }
 
-            console.log('=== 서버 응답 ===');
-            console.log('응답 데이터:', result);
-
             if (response.ok && result.success) {
                 alert('클래스 신청이 완료되었습니다!');
-                console.log('신청 성공:', result.data);
             } else {
                 const errorMessage = result.message || '알 수 없는 오류가 발생했습니다.';
                 alert('신청 실패: ' + errorMessage);
-                console.error('신청 실패:', errorMessage);
-                console.error('전체 응답:', result);
             }
 
         } catch (error) {
-            console.error('=== 신청 중 오류 발생 ===');
-            console.error('오류 상세:', error);
-            console.error('오류 메시지:', error.message);
-            console.error('오류 스택:', error.stack);
             alert('신청 중 오류가 발생했습니다: ' + error.message);
         }
     };

@@ -24,6 +24,7 @@ const AddClassPage = () => {
         title: '',
         categoryId: '',
         mainImage: null,
+        mainImageUrl: '', // S3에서 받은 이미지 URL 저장
         detailContent: '',
         curriculumDifficulty: '',
         curriculum: '',
@@ -31,6 +32,9 @@ const AddClassPage = () => {
         mentorIntro: '', // 멘토 소개 추가
         spaceInfo: ''    // 공간 상세 정보 추가
     });
+
+    // --- 이미지 업로드 상태 ---
+    const [imageUploading, setImageUploading] = useState(false);
 
     // --- Step completion tracking ---
     const [completedSteps, setCompletedSteps] = useState({
@@ -73,7 +77,7 @@ const AddClassPage = () => {
                 const resCategories = await axios.get('/api/categories');
                 setCategories(resCategories.data);
             } catch (e) {
-                console.error('카테고리 로드 실패:', e);
+
                 setCategories([
                     { id: 1, name: '디자인' },
                     { id: 2, name: '프로그래밍' },
@@ -84,7 +88,7 @@ const AddClassPage = () => {
                 const resRegions = await axios.get('/api/regions');
                 setRegions(resRegions.data);
             } catch (e) {
-                console.error('지역 로드 실패:', e);
+
                 setRegions([
                     { id: 1, name: '서울' },
                     { id: 2, name: '경기' },
@@ -103,7 +107,7 @@ const AddClassPage = () => {
             0: !!formData.onlineOffline,
             1: !!formData.categoryId,
             2: !!formData.title,
-            3: !!formData.mainImage,
+            3: !!formData.mainImage || !!formData.mainImageUrl, // 이미지 파일 또는 URL이 있으면 완료
             4: !!formData.detailContent,
             5: !!formData.curriculum && !!formData.curriculumDifficulty,
             6: !!formData.mentorIntro,
@@ -117,7 +121,7 @@ const AddClassPage = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleFileChange = (e, fieldName) => {
+    const handleFileChange = async (e, fieldName) => {
         const file = e.target.files[0];
         
         if (file) {
@@ -136,9 +140,54 @@ const AddClassPage = () => {
                 e.target.value = ''; // 입력 초기화
                 return;
             }
+            
+            // 이미지를 바로 S3에 업로드
+            if (fieldName === 'mainImage') {
+                await uploadImageToS3(file);
+            } else {
+                // 다른 파일은 기존처럼 처리
+                setFormData(prev => ({ ...prev, [fieldName]: file }));
+            }
         }
+    };
+    
+    // S3에 이미지 업로드 하는 함수 (프로필 이미지 업로드와 동일한 방식)
+    const uploadImageToS3 = async (file) => {
+        setImageUploading(true);
         
-        setFormData(prev => ({ ...prev, [fieldName]: file }));
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            const response = await axios.post(
+                'http://56.155.32.85:8080/api/classes/upload-image',  // 새로운 EC2 IP
+                formData,
+                {
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+            
+            if (response.data.success) {
+                // S3 URL을 formData에 저장
+                setFormData(prev => ({ 
+                    ...prev, 
+                    mainImage: file,
+                    mainImageUrl: response.data.imageUrl 
+                }));
+                
+                alert('이미지 업로드 완료!');
+            } else {
+                alert('이미지 업로드 실패: ' + response.data.message);
+            }
+            
+        } catch (error) {
+            alert('이미지 업로드 중 오류가 발생했습니다.');
+        } finally {
+            setImageUploading(false);
+        }
     };
 
     const handleNext = (e) => {
@@ -178,29 +227,20 @@ const AddClassPage = () => {
             level: formData.curriculumDifficulty,
             detailContent: formData.detailContent,
             regionId: +formData.spaceRegionId,
-            mainImage: formData.mainImage ? null : DEFAULT_IMAGE_URL,
+            mainImage: formData.mainImageUrl || DEFAULT_IMAGE_URL, // S3 URL 사용
             mentorId: user?.id || 1,
             mentoInfo: formData.mentorIntro, // 멘토 소개 추가
             spaceInfo: formData.spaceInfo    // 공간 상세 정보 추가
         };
 
         try {
-            let response;
-            if (formData.mainImage) {
-                const fd = new FormData();
-                fd.append('classData', new Blob([JSON.stringify(classData)], { type: 'application/json' }));
-                fd.append('mainImage', formData.mainImage);
-                response = await axios.post('/api/classes/with-files', fd, { 
-                    headers: { 'Content-Type': 'multipart/form-data' } 
-                });
-            } else {
-                response = await axios.post('/api/classes', classData);
-            }
-            console.log('서버 응답:', response.data);
+            // 이제 이미지는 이미 S3에 업로드되었으므로 일반 API 호출만 사용
+            const response = await axios.post('/api/classes', classData);
+            
             alert('클래스 생성 성공!');
             window.location.href = '/';
         } catch (err) {
-            console.error('에러:', err);
+
             
             // 구체적인 에러 메시지 처리
             let errorMessage = '클래스 생성 실패';
@@ -302,23 +342,42 @@ const AddClassPage = () => {
                         <div className="text-center">
                             <div className="flex justify-center mb-6">
                                 <label className={`inline-block py-3 px-6 rounded-lg cursor-pointer font-medium ${
-                                    formData.mainImage 
-                                        ? 'bg-orange-500 text-white hover:bg-orange-600' 
+                                    imageUploading 
+                                        ? 'bg-gray-400 text-white cursor-not-allowed' 
+                                        : (formData.mainImage || formData.mainImageUrl)
+                                        ? 'bg-green-500 text-white hover:bg-green-600' 
                                         : 'bg-orange-500 text-white hover:bg-orange-600'
                                 }`}>
-                                    이미지 등록
-                                    <input type="file" accept="image/*" onChange={e => handleFileChange(e, 'mainImage')} className="hidden" />
+                                    {imageUploading 
+                                        ? '이미지 업로드 중...' 
+                                        : (formData.mainImage || formData.mainImageUrl)
+                                        ? '이미지 업로드 완료 ✓' 
+                                        : '이미지 등록'
+                                    }
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        onChange={e => handleFileChange(e, 'mainImage')} 
+                                        className="hidden" 
+                                        disabled={imageUploading}
+                                    />
                                 </label>
                             </div>
-                            {formData.mainImage && (
+                            {(formData.mainImage || formData.mainImageUrl) && (
                                 <div className="mt-4">
-                                    <p className="text-sm text-gray-600">선택된 파일: {formData.mainImage.name}</p>
-                                    <p className="text-xs text-gray-500">크기: {(formData.mainImage.size / 1024 / 1024).toFixed(2)}MB</p>
+                                    <p className="text-sm text-gray-600">선택된 파일: {formData.mainImage?.name || 'S3 업로드 완료'}</p>
+                                    {formData.mainImage && (
+                                        <p className="text-xs text-gray-500">크기: {(formData.mainImage.size / 1024 / 1024).toFixed(2)}MB</p>
+                                    )}
+                                    {formData.mainImageUrl && (
+                                        <p className="text-xs text-green-600">S3 URL: {formData.mainImageUrl}</p>
+                                    )}
                                 </div>
                             )}
                             <div className="text-sm text-gray-500 mt-4">
                                 <p>* 메인 이미지를 업로드해 주세요</p>
                                 <p>* 최대 10MB, JPG/PNG/GIF/WebP 형식 지원</p>
+                                <p>* 이미지는 바로 S3에 업로드됩니다</p>
                             </div>
                         </div>
                     </div>

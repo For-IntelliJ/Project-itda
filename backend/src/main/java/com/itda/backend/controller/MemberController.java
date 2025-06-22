@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/members")
@@ -66,7 +68,17 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다");
         }
 
-        return ResponseEntity.ok(loginUser);
+        // 순환 참조 방지를 위해 단순한 Map 반환
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", loginUser.getId());
+        response.put("nickname", loginUser.getNickname());
+        response.put("username", loginUser.getUsername());
+        response.put("email", loginUser.getEmail());
+        response.put("role", loginUser.getRole().toString());
+        response.put("loginType", loginUser.getLoginType().toString());
+        response.put("createdAt", loginUser.getCreatedAt());
+        
+        return ResponseEntity.ok(response);
     }
 
     // 로그아웃

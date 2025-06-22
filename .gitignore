@@ -79,3 +79,6 @@ backend/src/main/resources/application.properties
 *.pack
 *.pack
 *.old
+/.gradle
+/frontend/node_modules
+/.gradle
