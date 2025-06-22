@@ -26,16 +26,26 @@ function ChangePassword() {
         }
 
         // 2. 서버에 요청 보내기
-        axios.post("/api/member/change-password", {
+        axios.post("/api/members/change-password", {
             currentPassword,
             newPassword
+        }, {
+            withCredentials: true
         })
             .then(() => {
                 setSuccess("비밀번호가 성공적으로 변경되었습니다.");
                 setTimeout(() => navigate("/mypage?tab=profilesettings"), 1500); // 마이페이지 등으로 이동
             })
             .catch(err => {
-                setError(err.response?.data || "비밀번호 변경에 실패했습니다.");
+                const res = err.response?.data;
+
+                if (typeof res === "string") {
+                    setError(res); // 문자열이면 그대로 사용
+                } else if (res?.error) {
+                    setError(res.error); // 예: {"error": "현재 비밀번호가 일치하지 않습니다"}
+                } else {
+                    setError("비밀번호 변경에 실패했습니다.");
+                }
             });
     };
 
@@ -43,7 +53,7 @@ function ChangePassword() {
         <div className="w-full py-10 px-4">
             <h1 className="text-2xl font-bold mb-8">비밀번호 변경</h1>
 
-            <div className="w-full max-w-md border-2 border-gray-400 rounded-lg p-8 flex flex-col gap-6">
+            <div className="w-full border-2 border-gray-400 rounded-lg p-8 flex flex-col gap-6">
                 {error && <div className="text-red-500 text-sm">{error}</div>}
                 {success && <div className="text-green-500 text-sm">{success}</div>}
 

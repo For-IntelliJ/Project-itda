@@ -50,20 +50,19 @@ public class MemberService {
         return login(dto.getEmail(), dto.getPassword());
     }
 
-    public boolean changePassword(Long memberId, String currentPw, String newPw) {
+    public void changePassword(Long memberId, String currentPassword, String newPassword) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
-        // 평문 비교인 경우:
-        if (!member.getPassword().equals(currentPw)) {
-            return false;
+        // 현재 비밀번호 일치 확인 (암호화된 비밀번호 사용 중이면 passwordEncoder로 비교)
+        if (!member.getPassword().equals(currentPassword)) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
         }
 
-        member.setPassword(newPw); // 비밀번호 변경
-        memberRepository.save(member); // DB에 반영
-
-        return true;
+        member.setPassword(newPassword);
+        memberRepository.save(member);
     }
+
 
     //별명과 카카오 id를 받아서 회원저장
     /*// 기존: MemberResponseDto 반환
