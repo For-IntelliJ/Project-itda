@@ -53,7 +53,7 @@ function EditProfile() {
             formData.append("file", file);
 
             //백엔드 주소(fetch대신 axios 사용)
-            axios.post("http://localhost:8080/api/profile/upload", formData, {
+            axios.post("http://13.208.249.168:8080/api/profile/upload", formData, {
                 withCredentials: true,  // 이 부분 추가
                 headers: {
                     "Content-Type": "multipart/form-data",
