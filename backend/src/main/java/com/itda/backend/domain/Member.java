@@ -8,7 +8,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -34,8 +33,6 @@ public class Member implements Serializable {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Setter
-    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)

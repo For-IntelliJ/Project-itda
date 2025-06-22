@@ -62,6 +62,9 @@ public class MemberController {
     // 현재 로그인된 유저 정보 조회
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(HttpSession session) {
+        System.out.println("🧪 /me 요청 → 세션 ID: " + session.getId());
+        System.out.println("🧪 /me 요청 → 세션 유저: " + session.getAttribute("loginUser"));
+
         Member loginUser = (Member) session.getAttribute("loginUser");
 
         if (loginUser == null) {
@@ -99,13 +102,12 @@ public class MemberController {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
 
-        try {
-            memberService.changePassword(loginUser.getId(), dto.getCurrentPassword(), dto.getNewPassword());
-            return ResponseEntity.ok("비밀번호가 변경되었습니다.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        boolean changed = memberService.changePassword(loginUser.getId(), dto.getCurrentPassword(), dto.getNewPassword());
+
+        if (!changed) {
+            return ResponseEntity.badRequest().body("현재 비밀번호가 일치하지 않습니다.");
         }
+
+        return ResponseEntity.ok("비밀번호가 변경되었습니다.");
     }
-
-
 }
