@@ -36,6 +36,10 @@ function MyPageLayout() {
     // 탭 선택 감지
     useEffect(() => {
         const currentTab = searchParams.get("tab") || "profilesettings";
+
+        // editprofile일 경우도 profilesettings 탭을 강조
+        const mappedTab = currentTab === "editprofile" ? "profilesettings" : currentTab;
+
         setSelectedTab(currentTab);
     }, [searchParams]);
 
@@ -45,19 +49,26 @@ function MyPageLayout() {
             <div className="w-48 pr-6 border-r border-gray-200">
                 <h2 className="text-xl font-bold mb-6">계정설정</h2>
                 <ul className="space-y-3">
-                    {tabs.map((tab) => (
-                        <li
-                            key={tab.key}
-                            onClick={() => navigate(`/mypage?tab=${tab.key}`)}
-                            className={`cursor-pointer px-3 py-2 rounded ${
-                                selectedTab === tab.key
-                                    ? "bg-gray-100 font-semibold text-[#3D4EFE]"
-                                    : "text-gray-600 hover:text-[#3D4EFE]"
-                            }`}
-                        >
-                            {tab.label}
-                        </li>
-                    ))}
+                    {tabs.map((tab) => {
+                        const isSelected =
+                            selectedTab === tab.key ||
+                            (tab.key === "profilesettings" && searchParams.get("tab") === "editprofile");
+
+                        return (
+                            <li
+                                key={tab.key}
+                                onClick={() => navigate(`/mypage?tab=${tab.key}`)}
+                                className={`cursor-pointer px-3 py-2 rounded ${
+                                    isSelected
+                                        ? "bg-gray-100 font-semibold text-[#3D4EFE]"
+                                        : "text-gray-600 hover:text-[#3D4EFE]"
+                                }`}
+                            >
+                                {tab.label}
+                            </li>
+                        );
+                    })}
+
                 </ul>
             </div>
 
