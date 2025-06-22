@@ -34,3 +34,11 @@ export const checkKakaoLogin = async () => {
     });
     return res.data;  // 닉네임 정보
 };
+
+// 회원 탈퇴
+export const deleteAccount = async () => {
+    const response = await axios.post('/api/members/delete', {}, {
+        withCredentials: true, // ✅ 세션 쿠키 포함
+    });
+    return response.data;
+};

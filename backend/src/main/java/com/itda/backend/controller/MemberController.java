@@ -110,4 +110,19 @@ public class MemberController {
 
         return ResponseEntity.ok("비밀번호가 변경되었습니다.");
     }
+
+    // 회원탈퇴
+    @PostMapping("/delete")
+    public ResponseEntity<?> deleteAccount(HttpSession session) {
+        Member loginUser = (Member) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        memberService.deleteMember(loginUser.getId());
+        session.invalidate();
+        return ResponseEntity.ok("탈퇴가 완료되었습니다.");
+    }
+
+
 }

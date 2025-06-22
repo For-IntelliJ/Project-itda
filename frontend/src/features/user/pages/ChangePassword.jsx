@@ -26,7 +26,7 @@ function ChangePassword() {
         }
 
         // 2. 서버에 요청 보내기
-        axios.post("/api/member/change-password", {
+        axios.post("/api/members/change-password", {
             currentPassword,
             newPassword
         })
@@ -35,7 +35,10 @@ function ChangePassword() {
                 setTimeout(() => navigate("/mypage?tab=profilesettings"), 1500); // 마이페이지 등으로 이동
             })
             .catch(err => {
-                setError(err.response?.data || "비밀번호 변경에 실패했습니다.");
+                const message = err.response?.data?.error
+                    || err.response?.data?.message
+                    || "비밀번호 변경에 실패했습니다.";
+                setError(message);
             });
     };
 
@@ -43,7 +46,7 @@ function ChangePassword() {
         <div className="w-full py-10 px-4">
             <h1 className="text-2xl font-bold mb-8">비밀번호 변경</h1>
 
-            <div className="w-full max-w-md border-2 border-gray-400 rounded-lg p-8 flex flex-col gap-6">
+            <div className="w-full border-2 border-gray-400 rounded-lg p-8 flex flex-col gap-6 ">
                 {error && <div className="text-red-500 text-sm">{error}</div>}
                 {success && <div className="text-green-500 text-sm">{success}</div>}
 

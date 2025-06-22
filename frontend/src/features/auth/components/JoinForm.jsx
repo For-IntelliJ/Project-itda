@@ -32,7 +32,7 @@ const JoinForm = () => {
         const { confirmPassword, ...payload } = formData;
 
         try {
-            await axios.post('http://localhost:8080/api/member/join', payload, {
+            await axios.post('http://localhost:8080/api/members/join', payload, {
                 withCredentials: true,
             });
             alert('회원가입 성공!');
@@ -40,6 +40,28 @@ const JoinForm = () => {
         } catch (error) {
             alert('회원가입 실패!');
             console.error(error);
+        }
+    };
+
+    const handleChangePhone = (e) => {
+        const { name, value } = e.target;
+
+        // 전화번호 자동 하이픈 처리
+        if (name === "phone") {
+            const onlyNums = value.replace(/[^\d]/g, "");
+            let formatted = onlyNums;
+            if (onlyNums.length <= 3) {
+                formatted = onlyNums;
+            } else if (onlyNums.length <= 7) {
+                formatted = `${onlyNums.slice(0, 3)}-${onlyNums.slice(3)}`;
+            } else if (onlyNums.length <= 11) {
+                formatted = `${onlyNums.slice(0, 3)}-${onlyNums.slice(3, 7)}-${onlyNums.slice(7, 11)}`;
+            } else {
+                formatted = onlyNums; // 길이 초과 시 원형 유지
+            }
+            setFormData((prev) => ({ ...prev, [name]: formatted }));
+        } else {
+            setFormData((prev) => ({ ...prev, [name]: value }));
         }
     };
 
@@ -77,6 +99,42 @@ const JoinForm = () => {
                         />
                     </div>
                 ))}
+                {/* 전화번호 + 성별 한 줄 배치 */}
+                <div className="flex gap-4">
+                    {/* 전화번호 입력 */}
+                    <div className="flex flex-col flex-1 gap-1">
+                        <label className="text-sm font-medium">전화번호</label>
+                        <input
+                            type="text"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            placeholder="010-0000-0000"
+                            className="h-9 rounded-md px-3 bg-slate-50 border outline outline-1 outline-gray-300 hover:border-hover text-sm"
+                            required
+                        />
+                    </div>
+
+                    {/* 성별 선택 */}
+                    <div className="flex flex-col gap-1">
+                        <label className="text-sm font-medium">성별</label>
+                        <div className="flex gap-3 pt-2">
+                            {["남자", "여자"].map((genderOption) => (
+                                <label key={genderOption} className="text-sm">
+                                    <input
+                                        type="radio"
+                                        name="gender"
+                                        value={genderOption}
+                                        checked={formData.gender === genderOption}
+                                        onChange={handleChange}
+                                        className="mr-1"
+                                    />
+                                    {genderOption}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                </div>
 
                 <button type="submit" className="w-full mt-1 bg-slate-800 text-white py-3 rounded-md text-sm font-semibold">
                     회원가입
@@ -84,7 +142,7 @@ const JoinForm = () => {
             </form>
 
             {/* 소셜 로그인 */}
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center ">
                 <div className="w-full flex items-center gap-2">
                     <hr className="flex-1 border-t border-slate-300" />
                     <span className="text-xs text-gray-500">Or</span>
@@ -94,7 +152,7 @@ const JoinForm = () => {
             </div>
 
             {/* 하단 링크 */}
-            <div className="text-center text-sm text-gray-600 leading-tight">
+            <div className="text-center text-sm text-gray-600 leading-tight mt-3">
                 이미 계정이 있으신가요?{" "}
                 <Link to="/login" className="text-blue-600 hover:underline">로그인</Link>
             </div>

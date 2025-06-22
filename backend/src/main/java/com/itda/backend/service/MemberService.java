@@ -10,6 +10,7 @@ import com.itda.backend.dto.MemberResponseDto;
 import com.itda.backend.repository.MemberRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -50,6 +51,7 @@ public class MemberService {
         return login(dto.getEmail(), dto.getPassword());
     }
 
+    // 비밀번호 변경
     public boolean changePassword(Long memberId, String currentPw, String newPw) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
@@ -117,7 +119,6 @@ public class MemberService {
         return memberRepository.save(member);
     }
 
-
     //카카로 회원가입 유무 확인
     public boolean existsByKakaoId(String kakaoId) {
         return memberRepository.existsByKakaoId(kakaoId);
@@ -134,5 +135,17 @@ public class MemberService {
         return memberRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 사용자를 찾을 수 없습니다."));
     }
+
+    // 회원 탈퇴
+    @Transactional
+    public void deleteMember(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 회원을 찾을 수 없습니다."));
+
+        memberRepository.delete(member); // 실제 삭제
+    }
+
+
+
 
 }

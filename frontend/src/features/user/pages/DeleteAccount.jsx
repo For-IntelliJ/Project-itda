@@ -1,6 +1,30 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { deleteAccount } from "../../auth/api"; // 경로는 실제 위치에 따라 조정
+import { useNavigate } from "react-router-dom";
+
+
 
 function DeleteAccount() {
+    const navigate = useNavigate();
+
+    const handleDelete = async () => {
+        if (!window.confirm("정말 탈퇴하시겠습니까?")) return;
+
+        try {
+            await deleteAccount();
+            alert("탈퇴가 완료되었습니다.");
+
+            localStorage.removeItem("loginUser");
+            sessionStorage.clear();
+
+            window.location.href = "/"; // 또는 navigate("/") + reload
+
+        } catch (error) {
+            console.error("❌ 탈퇴 실패:", error);
+            alert("탈퇴 중 오류가 발생했습니다.");
+        }
+    };
+
 
     return (
         <div className="w-full  py-10 px-4">
@@ -23,7 +47,9 @@ function DeleteAccount() {
                 </p>
 
                 <div className="flex justify-end ">
-                    <button className="bg-[#FF3D3D] hover:bg-[#B22222] text-white font-semibold py-2 px-4 rounded-lg w-[100px]">
+                    <button
+                        onClick={handleDelete}
+                        className="bg-[#FF3D3D] hover:bg-[#B22222] text-white font-semibold py-2 px-4 rounded-lg w-[100px]">
                         탈퇴하기
                     </button>
                 </div>

@@ -22,7 +22,7 @@ public class Board {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "writer_id", nullable = false)
+    @JoinColumn(name = "writer_id", nullable = true)
     private Member writer;
 
     @Enumerated(EnumType.STRING)
