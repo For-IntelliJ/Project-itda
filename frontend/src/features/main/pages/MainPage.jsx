@@ -8,10 +8,10 @@ const banners = ["/img/Benner1.svg", "/img/Benner2.svg"];
 
 // 카테고리 버튼 정보 (메인 화면 상단 메뉴)
 const categoryButtons = [
-    { icon: "/img/Local_icon.png", label: "지역", description: "지역별 클래스를 둘러보기" },
+    { icon: "/img/Local_icon.png", label: "지역", description: "내 주변의 지역별 클래스" },
     { icon: "/img/Type_icon.png", label: "유형", description: "유형별 클래스를 둘러보기" },
     { icon: "/img/Category_icon.png", label: "카테고리", description: "카테고리별 다양한 클래스" },
-    { icon: "/img/Level_icon.png", label: "난이도", description: "난이도별 클래스를 둘러보기" },
+    { icon: "/img/Level_icon.png", label: "난이도", description: "난이도별 다양한 클래스" },
 ];
 
 // 기본 placeholder 이미지들
@@ -211,7 +211,7 @@ const Main = () => {
                     {categoryButtons.map((btn, idx) => (
                         <div
                             key={idx}
-                            className="active:scale-95 w-[220px] h-24 bg-white hover:bg-gray-100 rounded-lg flex items-center px-4 shadow-md hover:shadow-lg transition duration-300 cursor-pointer"
+                            className="active:scale-95 w-[18rem] h-24 bg-white hover:bg-gray-100 rounded-lg flex items-center px-4 shadow-md hover:shadow-lg transition duration-300 cursor-pointer"
                         >
                             <img 
                                 src={btn.icon} 

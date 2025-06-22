@@ -79,7 +79,6 @@ backend/src/main/resources/application.properties
 *.pack
 *.pack
 *.old
-
-# 임시 백업 폴더
-temp_backup/
-*.backup
+/.gradle
+/frontend/node_modules
+/.gradle
