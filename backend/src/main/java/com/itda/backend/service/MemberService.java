@@ -135,4 +135,15 @@ public class MemberService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 사용자를 찾을 수 없습니다."));
     }
 
+    //URL이미지 DB에 저장
+    // 프로필 이미지 URL 저장
+    public void updateProfileImage(String kakaoId, String imageUrl) {
+        Member member = memberRepository.findByKakaoId(kakaoId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. kakaoId: " + kakaoId));
+
+        member.setProfileImage(imageUrl);
+        memberRepository.save(member);
+    }
+
+
 }

@@ -50,6 +50,11 @@ public class Member {
     @Column(unique = true)
     private String kakaoId;
 
+    //프로필이미지
+    @Column(name = "profile_image")
+    private String profileImage;
+
+
     private LocalDateTime createdAt;
 
     // MentorProfile과의 관계 추가
@@ -159,4 +164,13 @@ public class Member {
     public void setMentorProfile(MentorProfile mentorProfile) {
         this.mentorProfile = mentorProfile;
     }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
 }
