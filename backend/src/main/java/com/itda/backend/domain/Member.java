@@ -8,6 +8,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,7 +19,9 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Member {
+public class Member implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L; // 선택 사항 (경고 없애기)
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

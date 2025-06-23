@@ -25,9 +25,9 @@ public class BoardController {
     // ✅ 세션 확인용 GET 핸들러 추가
     @GetMapping("/write")
     public ResponseEntity<?> goWritePage(HttpSession session) {
-        Object sessionUser = session.getAttribute("loginUser");
+        Member loginUser = (Member) session.getAttribute("loginUser");
 
-        if (!(sessionUser instanceof Member)) {
+        if (loginUser == null) {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
 

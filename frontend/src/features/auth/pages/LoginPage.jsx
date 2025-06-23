@@ -1,9 +1,18 @@
 import React from 'react';
 import LoginForm from "../components/LoginForm";
+import {Link} from "react-router-dom";
 
 const LoginPage = () => {
     return (
-        <div className="flex justify-center items-center min-h-screen bg-neutral-50">
+        <div className="flex flex-col justify-center items-center min-h-screen bg-neutral-50">
+            {/*로고*/}
+            <div className="w-full max-w-[1024px] py-6 px-4 flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                    <img src="/img/MainLogo.png" alt="Main Logo" className="h-10" />
+                    <Link to="/" className="text-3xl font-dnf text-font">잇다</Link>
+                </div>
+            </div>
+            {/* 로그인 페이지 전체 레이아웃 */}
             <div className="w-[1024px] h-[720px] flex rounded-2xl shadow-xl bg-neutral-50 overflow-hidden">
                 {/* 왼쪽: 로그인 영역 */}
                 <div className="w-1/2 flex flex-col justify-center items-center bg-white">

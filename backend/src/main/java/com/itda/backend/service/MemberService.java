@@ -50,6 +50,7 @@ public class MemberService {
         return login(dto.getEmail(), dto.getPassword());
     }
 
+    // 비밀번호 변경
     public boolean changePassword(Long memberId, String currentPw, String newPw) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));

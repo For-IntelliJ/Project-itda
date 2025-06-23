@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import PostForm from "../components/PostForm";
 import axios from "axios";
@@ -8,10 +8,18 @@ import axios from "axios";
 function AskQuestionPage() {
     const navigate = useNavigate(); //페이지 이동 훅
 
+    useEffect(() => {
+        axios.get("http://localhost:8080/api/members/me", { withCredentials: true })
+            .catch(() => {
+                alert("로그인이 필요합니다.");
+                navigate("/login");
+            });
+    }, []);
+
 
     const handleSubmit = async (data) => {
         try {
-            await axios.post("/api/board/write", {
+            await axios.post("http://localhost:8080/api/boards/write", {
                 type: "QUESTION",
                 title: data.title,
                 content: data.content,
