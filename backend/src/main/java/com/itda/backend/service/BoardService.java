@@ -49,13 +49,15 @@ public class BoardService extends GenericService<Board> {
             throw new IllegalArgumentException("유효하지 않은 게시판 타입입니다: " + dto.getType());
         }
 
+        // 게시글 생성 및 저장
         Board board = new Board();
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
         board.setWriter(writer);
         board.setType(type);
+        board = boardRepository.save(board); // 먼저 저장
 
-        // 태그 처리
+        // 태그 연결
         if (dto.getTags() != null && !dto.getTags().isEmpty()) {
             for (String tagName : dto.getTags()) {
                 Tag tag = tagRepository.findByName(tagName)
@@ -64,14 +66,13 @@ public class BoardService extends GenericService<Board> {
                 BoardTag boardTag = BoardTag.builder()
                         .board(board)
                         .tag(tag)
-                        .id(new BoardTagId(null, tag.getId())) // id는 persist 후 자동 할당됨
+                        .id(new BoardTagId(board.getId(), tag.getId()))
                         .build();
 
-                board.addBoardTag(boardTag);
+                boardTagRepository.save(boardTag);
             }
         }
 
-        boardRepository.save(board);
         log.info("✅ 게시글 저장 완료 (제목: {}, 작성자 ID: {})", board.getTitle(), writer.getId());
     }
 }
