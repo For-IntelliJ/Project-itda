@@ -10,6 +10,8 @@ import com.itda.backend.dto.MemberResponseDto;
 import com.itda.backend.repository.MemberRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 @Slf4j
 @Service
@@ -145,6 +147,16 @@ public class MemberService {
         member.setProfileImage(imageUrl);
         memberRepository.save(member);
     }
+
+    // 회원 삭제
+    @Transactional
+    public void deleteMember(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+
+        memberRepository.delete(member);
+    }
+
 
 
 }
